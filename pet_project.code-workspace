@@ -1,0 +1,14 @@
+{
+    "folders": [
+        { "path": "." },
+        { "name": "accounts", "path": "services/accounts" },
+        { "name": "another_service", "path": "services/another_service" }
+    ],
+    "settings": {
+        // Указывает расширению Python искать venv в папках уровнем выше или в текущих
+        "python.venvFolders": ["services", ".venv", "venv"],
+        
+        // Автоматически подставляет путь к python из .venv для КАЖДОЙ папки в 'folders'
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+    }
+}
