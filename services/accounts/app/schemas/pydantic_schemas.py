@@ -28,5 +28,3 @@ class TokensPayload(BaseModel):
     iat: int
     exp: int
     token_type: str 
-
-

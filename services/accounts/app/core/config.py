@@ -10,7 +10,8 @@ class MySettings(BaseSettings):
     PRIVATE_KEY_HEX: str
     PUBLIC_KEY_HEX: str
 
-    model_config = SettingsConfigDict(env_file="envs/main.env")
+    model_config = SettingsConfigDict(env_file="envs/.env.local",
+                                      env_file_required=False)
 
     @property
     def url_db_asyncpg(self):

@@ -10,11 +10,8 @@ from app.models.users import AuthUsers
 from tests.utils_for_tests import test_get_db_overrides, test_sessionmaker
 
 
-
 # if sys.platform == "win32":
 #     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-
 
 
 @pytest.fixture(scope="function", autouse=True)

@@ -14,9 +14,7 @@ router = APIRouter()
 @router.post('/register', response_model=CreateUserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user: User, db: AsyncSession = Depends(get_db)) -> CreateUserResponse:
     try:
-        print('CREATE_USER не пройдено')
         new_user = await create_user(db, user)
-        print('CREATE_USER пройдено')
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Email already exists')
     except Exception as ERROR: 

@@ -12,9 +12,6 @@ async def create_user(db: AsyncSession, user_data: User):
     db_user = AuthUsers(email=user_data.email, password=hashed_password)
     db.add(db_user)
     await db.commit()
-    print("---------------------------------------------------------------------------------")
-    print("!!!!ПОЛЬЗОВАТЕЛЬ ЗАРЕГИСТРИРОВАН!!!!")
-    print("---------------------------------------------------------------------------------")
     return db_user
 
 

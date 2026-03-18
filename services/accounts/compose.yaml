@@ -1,0 +1,52 @@
+services:
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME}  # Имя создаваемой базы
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    container_name: db_con
+    ports:
+      - "5432:5432" # может пригодится для pytest 
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  accounts:
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+      - PRIVATE_KEY_HEX=${PRIVATE_KEY_HEX}
+      - PUBLIC_KEY_HEX=${PUBLIC_KEY_HEX}
+    build:
+      context: .
+      target: test
+    container_name: accounts_con
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "python -m pytest -s -v"
+    volumes:
+      - .:/project
+    ports:
+      - "8000:8000"
+    networks:
+      - app_network
+
+
+volumes:
+  postgres_data:
+
+networks:
+  app_network:
+    driver: bridge
