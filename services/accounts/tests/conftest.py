@@ -1,29 +1,37 @@
 import pytest
-import asyncio
-import sys
 
-from sqlalchemy import delete
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
-from app.main import application
-from app.dependencies.deps import get_db
-from app.models.users import AuthUsers
-from tests.utils_for_tests import test_get_db_overrides, test_sessionmaker
+from app.db.database import async_engine
+from app.core.config import settings
 
 
-# if sys.platform == "win32":
-#     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-
-@pytest.fixture(scope="function", autouse=True)
-async def setup_db_override():
-    application.dependency_overrides[get_db] = test_get_db_overrides
-    yield
-    application.dependency_overrides.clear()
+@pytest.fixture(scope="session", autouse=True)
+def critical_check():
+    if not settings.IS_TEST_DB:
+        pytest.exit(f"Остановка всех тестов: БАЗА ДАННЫХ {settings.DB_NAME} НЕ ДЛЯ ТЕСТИРОВАНИЯ.")
 
 
 @pytest.fixture(scope='function', autouse=True)
-async def db_truncate(setup_db_override):
-    async with test_sessionmaker() as session:
-        await session.execute(delete(AuthUsers))
-        await session.commit()
-        
+async def db_truncate(critical_check):
+    async with async_engine.begin() as conn:
+        await conn.execute(text("TRUNCATE TABLE auth_users;"))
+    yield
+
+  
+@pytest.fixture(scope='session')
+async def global_engine() -> AsyncEngine:
+    return async_engine
+
+
+@pytest.fixture(scope='session')
+async def global_sessionmaker(global_engine):
+    async_session_factory: async_sessionmaker = async_sessionmaker(
+    bind=global_engine,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=False
+    )
+    return async_session_factory
+    

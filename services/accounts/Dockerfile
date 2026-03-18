@@ -12,7 +12,6 @@ COPY alembic.ini .
 
 # --- БЛОК 2 (Для тестов) ---
 FROM base AS test
-RUN pip install pytest
 COPY tests/ tests/ 
 COPY pytest.ini .
 RUN uv sync --frozen --group dev

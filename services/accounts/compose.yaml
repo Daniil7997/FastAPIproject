@@ -26,6 +26,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_NAME=${DB_NAME}
+      - IS_TEST_DB=${IS_TEST_DB}
       - PRIVATE_KEY_HEX=${PRIVATE_KEY_HEX}
       - PUBLIC_KEY_HEX=${PUBLIC_KEY_HEX}
     build:
@@ -35,7 +36,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "python -m pytest -s -v"
+    command: sh -c "alembic upgrade head && python -m pytest -s -v"
     volumes:
       - .:/project
     ports:
