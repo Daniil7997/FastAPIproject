@@ -1,0 +1,6 @@
+services:
+
+  accounts:
+    command: sh -c "alembic upgrade head && python -m pytest -s -v"
+
+

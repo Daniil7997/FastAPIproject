@@ -12,7 +12,6 @@ class MySettings(BaseSettings):
     DB_NAME: str
     IS_TEST_DB: bool = False
     PRIVATE_KEY_HEX: str
-    PUBLIC_KEY_HEX: str
 
 
     @field_validator("IS_TEST_DB", mode="before")
