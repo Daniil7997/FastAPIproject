@@ -26,7 +26,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
-      IS_TEST_DB: ${IS_TEST_DB}
+      IS_TEST_DB: ${IS_TEST_DB:-False}
       PRIVATE_KEY_HEX: ${PRIVATE_KEY_HEX}
     build:
       context: .
@@ -43,10 +43,12 @@ services:
     networks:
       - app_network
 
-
 volumes:
   postgres_data:
 
 networks:
   app_network:
     driver: bridge
+
+# стандартный запуск - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
+# для теста - command: sh -c "alembic upgrade head && python -m pytest -s -v"

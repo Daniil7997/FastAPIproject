@@ -32,7 +32,7 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
     json_access_payload = TokensPayload(
         sub = user_uuid,                  # ID пользователя
         iat = now_unix,                   # Время создания
-        exp = exp_access_unix,            # Срок действия
+        exp = exp_access_unix,            # Время действия
         token_type = "access"             # Тип токена
     ).model_dump(mode='json')
     json_refresh_payload = TokensPayload(    

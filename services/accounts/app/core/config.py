@@ -10,21 +10,12 @@ class MySettings(BaseSettings):
     DB_USER: str
     DB_PASS: str 
     DB_NAME: str
-    IS_TEST_DB: bool = False
+    IS_TEST_DB: bool
     PRIVATE_KEY_HEX: str
 
-
-    @field_validator("IS_TEST_DB", mode="before")
-    @classmethod
-    def clear_empty_strings(cls, data: Any) -> Any:
-        if data == '':
-            return False
-        else:
-            return data
-
-
     model_config = SettingsConfigDict(env_file="envs/.env.local",
-                                      env_file_required=False)
+                                      env_file_required=False,
+                                      extra='ignore')
 
 
     @property

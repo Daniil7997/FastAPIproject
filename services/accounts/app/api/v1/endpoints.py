@@ -19,7 +19,7 @@ async def register_user(user: User, db: AsyncSession = Depends(get_db)) -> Creat
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Email already exists')
     except Exception as ERROR: 
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Registration failed")
-    return CreateUserResponse(email=new_user.email)
+    return CreateUserResponse(email=new_user.email, user_uuid=new_user.user_uuid)
  
 
 @router.post('/get-token', response_model=GetToken, status_code=status.HTTP_200_OK)
@@ -31,5 +31,5 @@ async def get_token(user_data: User, db: AsyncSession = Depends(get_db)) -> GetT
                                            hash_password=user_db_data.password)
     if not check_password:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="passwords do not match")
-    return create_tokens(user_db_data.uuid)
+    return create_tokens(user_db_data.user_uuid)
     

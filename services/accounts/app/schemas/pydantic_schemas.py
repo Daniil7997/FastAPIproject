@@ -10,6 +10,7 @@ class User(BaseModel):
 
 class CreateUserResponse(BaseModel):
     email: EmailStr
+    user_uuid: uuid.UUID
     
 
 class GetToken(BaseModel):
@@ -18,7 +19,7 @@ class GetToken(BaseModel):
 
 
 class DbUserData(BaseModel):
-    uuid: uuid.UUID
+    user_uuid: uuid.UUID
     email: EmailStr
     password: str
     
