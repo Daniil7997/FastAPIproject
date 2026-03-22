@@ -50,5 +50,6 @@ networks:
   app_network:
     driver: bridge
 
-# стандартный запуск - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
-# для теста - command: sh -c "alembic upgrade head && python -m pytest -s -v"
+# локально: 
+# запуск сервера - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
+# запуск теста - command: sh -c "alembic upgrade head && python -m pytest -s -v"

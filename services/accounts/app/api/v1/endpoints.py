@@ -16,20 +16,21 @@ async def register_user(user: User, db: AsyncSession = Depends(get_db)) -> Creat
     try:
         new_user = await create_user(db, user)
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='Email already exists')
-    except Exception as ERROR: 
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Registration failed")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=[{"loc": "email",
+                                                                           "msg": "Email already exists"}])
     return CreateUserResponse(email=new_user.email, user_uuid=new_user.user_uuid)
  
 
 @router.post('/get-token', response_model=GetToken, status_code=status.HTTP_200_OK)
 async def get_token(user_data: User, db: AsyncSession = Depends(get_db)) -> GetToken:
     user_db_data = await find_user(db=db, user_data=user_data)
+    exception_detail = [{"loc": ["email", "password"], "msg": "Invalid password or email", "type": "auth-failed"}]
     if not user_db_data:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=exception_detail)
+
     check_password: bool = veryfi_password(raw_password=user_data.password,
                                            hash_password=user_db_data.password)
     if not check_password:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="passwords do not match")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=exception_detail)
     return create_tokens(user_db_data.user_uuid)
     

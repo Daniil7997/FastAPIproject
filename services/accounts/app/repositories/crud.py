@@ -7,12 +7,14 @@ from app.models.users import AuthUsers
 from app.schemas.pydantic_schemas import User, DbUserData
 
 
-async def create_user(db: AsyncSession, user_data: User):
+async def create_user(db: AsyncSession, user_data: User) -> DbUserData:
     hashed_password = hash_password(user_data.password)
     db_user = AuthUsers(email=user_data.email, password=hashed_password)
     db.add(db_user)
     await db.commit()
-    return db_user
+    return DbUserData(user_uuid=db_user.user_uuid,
+                      email=db_user.email,
+                      password=db_user.password)
 
 
 async def find_user(db: AsyncSession, user_data: User) -> DbUserData | None:
@@ -20,10 +22,11 @@ async def find_user(db: AsyncSession, user_data: User) -> DbUserData | None:
     stmt = select(*select_column).where(AuthUsers.email == user_data.email)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
-    user_py_data = DbUserData(user_uuid=user_db_data.user_uuid,
-                              email=user_db_data.email,
-                              password=user_db_data.password)
-    return user_py_data
+    if not user_db_data:
+        return None
+    return DbUserData(user_uuid=user_db_data.user_uuid,
+                      email=user_db_data.email,
+                      password=user_db_data.password)
 
 
 async def delete_user(db: AsyncSession, user_email: EmailStr) -> bool:
