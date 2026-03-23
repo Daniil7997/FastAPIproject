@@ -4,7 +4,7 @@ from uuid import UUID
 
 from app.main import application
 from app.schemas.pydantic_schemas import User, DbUserData, TokensPayload
-from app.repositories.crud import find_user, create_user
+from app.repositories.crud import find_user_by_email, create_user
 from app.core.security import decode_token
 from tests.utils_for_tests import test_users
 
@@ -24,7 +24,7 @@ async def test_register(global_sessionmaker):
                 }
             )
             assert response.status_code == 201
-            db_user: DbUserData = await find_user(db=session, user_data=user)
+            db_user: DbUserData = await find_user_by_email(db=session, user_data=user)
             assert db_user.password != user.password
             assert isinstance(db_user.user_uuid, UUID)
             assert isinstance(UUID(response.json()['user_uuid']), UUID)
@@ -50,7 +50,7 @@ async def test_token(global_sessionmaker):
             assert response.status_code == 200
             access_token:TokensPayload = decode_token(token=response.json()["access_token"])
             refresh_token:TokensPayload = decode_token(token=response.json()["refresh_token"])
-            db_user:DbUserData = await find_user(db=session, user_data=user)
+            db_user:DbUserData = await find_user_by_email(db=session, user_data=user)
             assert access_token.sub == db_user.user_uuid
             assert refresh_token.sub == db_user.user_uuid
             assert access_token.token_type == 'access'

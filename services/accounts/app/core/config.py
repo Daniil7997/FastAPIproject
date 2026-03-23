@@ -1,6 +1,3 @@
-from typing import Any
-
-from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -21,6 +18,10 @@ class MySettings(BaseSettings):
     @property
     def url_db_asyncpg(self):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    
+    @property
+    def api_root_url(self):
+        return '/account'
 
 
 settings = MySettings()

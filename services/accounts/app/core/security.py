@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.schemas.pydantic_schemas import GetToken, TokensPayload
 from app.logic.main_logic import get_time_for_jwt
 
+
 private_key_bytes = bytes.fromhex(settings.PRIVATE_KEY_HEX)
 
 PRIVATE_KEY = ed25519.Ed25519PrivateKey.from_private_bytes(private_key_bytes)
@@ -20,7 +21,7 @@ def hash_password(password: str) -> str:
     return HASH_ALGORITHM.hash(password)
 
 
-def veryfi_password(raw_password: str, hash_password: str) -> bool:
+def verify_password(raw_password: str, hash_password: str) -> bool:
     return HASH_ALGORITHM.verify(raw_password, hash_password)
 
 

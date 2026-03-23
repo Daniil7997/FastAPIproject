@@ -3,9 +3,17 @@ import uuid
 from pydantic import BaseModel, EmailStr, Field
 
 
+PASSWORD_CONFIG = Field(min_length=3, max_length=20)
+
+
 class User(BaseModel):
     email: EmailStr
-    password: str = Field(min_length=3, max_length=20)
+    password: str = PASSWORD_CONFIG
+
+
+class UserConfirmPass(BaseModel):
+    current_password: str = PASSWORD_CONFIG
+    new_password: str = PASSWORD_CONFIG
 
 
 class CreateUserResponse(BaseModel):
