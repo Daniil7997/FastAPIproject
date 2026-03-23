@@ -55,7 +55,7 @@ async def test_token(global_sessionmaker):
             access_json = response.json()["access_token"]
             refresh_json = response.json()["refresh_token"]
             access_token:TokensPayload = decode_token(token=access_json)
-            refresh_token:TokensPayload = decode_token(token=refresh_token)
+            refresh_token:TokensPayload = decode_token(token=refresh_json)
             db_user:DbUserData = await find_user_by_email(db=session, 
                                                           user_data=user)
             assert access_token.sub == db_user.user_uuid
