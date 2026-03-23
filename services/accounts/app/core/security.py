@@ -43,11 +43,17 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
         token_type = "refresh"
     ).model_dump(mode='json')
 
-    access_token = jwt.encode(json_access_payload, PRIVATE_KEY, algorithm=TOKEN_ALGORITHM)
-    refresh_token = jwt.encode(json_refresh_payload, PRIVATE_KEY, algorithm=TOKEN_ALGORITHM)
+    access_token = jwt.encode(json_access_payload, 
+                              PRIVATE_KEY, 
+                              algorithm=TOKEN_ALGORITHM)
+    refresh_token = jwt.encode(json_refresh_payload, 
+                               PRIVATE_KEY, 
+                               algorithm=TOKEN_ALGORITHM)
     return GetToken(access_token=access_token, refresh_token=refresh_token)
 
 
 def decode_token(token):
-    token = jwt.decode(algorithms=TOKEN_ALGORITHM, key=PRIVATE_KEY, jwt=token)
+    token = jwt.decode(algorithms=TOKEN_ALGORITHM, 
+                       key=PRIVATE_KEY, 
+                       jwt=token)
     return TokensPayload(**token)

@@ -14,7 +14,8 @@ from app.models.users import Base
 config = context.config
 
 
-config.set_main_option("sqlalchemy.url", settings.url_db_asyncpg + "?async_fallback=True")
+config.set_main_option("sqlalchemy.url", 
+                       settings.url_db_asyncpg + "?async_fallback=True")
 
 
 # Interpret the config file for Python logging.
@@ -67,7 +68,8 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, 
+                      target_metadata=target_metadata)
 
     with context.begin_transaction():
         context.run_migrations()

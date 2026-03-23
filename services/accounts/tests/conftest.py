@@ -10,7 +10,8 @@ from app.core.config import settings
 @pytest.fixture(scope="session", autouse=True)
 def critical_check():
     if not settings.IS_TEST_DB:
-        pytest.exit(f"Остановка всех тестов: БАЗА ДАННЫХ {settings.DB_NAME} НЕ ДЛЯ ТЕСТИРОВАНИЯ.")
+        pytest.exit(f"Остановка всех тестов: БАЗА ДАННЫХ {settings.DB_NAME}"
+                    f"НЕ ДЛЯ ТЕСТИРОВАНИЯ.")
 
 
 @pytest.fixture(scope='function', autouse=True)

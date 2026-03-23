@@ -4,5 +4,7 @@
         { "name": "accounts", "path": "services/accounts" },
         { "name": "another_service", "path": "services/another_service" }
     ],
-    "settings": {}
+    "settings": {
+        "editor.rulers": [79, 72]
+    }
 }
