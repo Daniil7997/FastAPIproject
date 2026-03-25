@@ -8,7 +8,8 @@ from app.schemas.pydantic_schemas import (User,
                                           TokensPayload)
 from app.repositories.crud import (find_user_by_email, 
                                    create_user)
-from app.core.security import decode_token
+from app.core.security import (decode_token,
+                               create_tokens)
 from tests.utils_for_tests import test_users
 
 
@@ -66,3 +67,26 @@ async def test_token(global_sessionmaker):
             assert refresh_token.iat < refresh_token.exp
             assert len(str(access_token.iat)) == 10
             assert len(str(refresh_token.iat)) == 10
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_change_password(global_sessionmaker):
+    async with AsyncClient(transport=ASGITransport(app=application), 
+                           base_url="http://test")as ac:
+        async with global_sessionmaker() as session:
+            user: User = test_users[0]
+            db_user_before = await create_user(db=session, user_data=user)
+            tokens = create_tokens(db_user_before.user_uuid)
+            response = await ac.post(
+                "/change-password", 
+                json={
+                    "current_password": user.password,
+                    "new_password": "veryStrongPas1957"
+                },
+                headers={"Authorization": f"Bearer {tokens.access_token}"}
+            )
+            assert response.status_code == 200
+            db_user_after: DbUserData = await find_user_by_email(db=session, 
+                                                           user_data=user)
+            assert db_user_after.password != db_user_before.password
