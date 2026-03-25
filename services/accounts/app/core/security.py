@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from pwdlib import PasswordHash
+from fastapi import HTTPException, status
 
 from app.core.config import settings
 from app.schemas.pydantic_schemas import GetToken, TokensPayload
@@ -36,6 +37,7 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
         exp = exp_access_unix,            # Время действия
         token_type = "access"             # Тип токена
     ).model_dump(mode='json')
+
     json_refresh_payload = TokensPayload(    
         sub = user_uuid,
         iat = now_unix,
@@ -53,7 +55,23 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
 
 
 def decode_token(token):
-    token = jwt.decode(algorithms=TOKEN_ALGORITHM, 
-                       key=PRIVATE_KEY, 
-                       jwt=token)
+    try:
+        token = jwt.decode(algorithms=TOKEN_ALGORITHM,
+                           key=PRIVATE_KEY,
+                           jwt=token)
+        
+    except jwt.exceptions.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=[{"loc": ["header", "Authorization"],
+                                     "msg": "token expired",
+                                     "type": "token-expired"}],
+                            headers={"WWW-Authenticate": "Bearer"})
+    
+    except jwt.exceptions.InvalidTokenError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail=[{"loc": ["header", "Authorization"],
+                                     "msg": "invalid token",
+                                     "type": "invalid-token"}],
+                            headers={"WWW-Authenticate": "Bearer"})
+    
     return TokensPayload(**token)
