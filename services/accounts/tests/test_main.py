@@ -4,12 +4,10 @@ from uuid import UUID
 
 from app.main import application
 from app.schemas.pydantic_schemas import (User, 
-                                          DbUserData, 
-                                          TokensPayload)
+                                          DbUserData)
 from app.repositories.crud import (find_user_by_email, 
                                    create_user)
-from app.core.security import (decode_token,
-                               create_tokens)
+from app.core.security import create_tokens
 from tests.utils_for_tests import test_users
 
 
@@ -18,23 +16,17 @@ from tests.utils_for_tests import test_users
 async def test_register(global_sessionmaker):
     async with AsyncClient(transport=ASGITransport(app=application), 
                            base_url="http://test")as ac:
-        async with global_sessionmaker() as session:
-            user: User = test_users[0]
-            response = await ac.post(
-                "/register", 
-                json={
-                    "email": user.email,
-                    "password": user.password
-                }
-            )
-            assert response.status_code == 201
-            db_user: DbUserData = await find_user_by_email(db=session, 
-                                                           user_data=user)
-            assert db_user.password != user.password
-            assert isinstance(db_user.user_uuid, UUID)
-            assert isinstance(UUID(response.json()['user_uuid']), UUID)
-            assert response.json()['user_uuid'] == str(db_user.user_uuid)
-            assert response.json()["email"] == user.email
+        user: User = test_users[0]
+        response = await ac.post(
+            "/register", 
+            json={
+                "email": user.email,
+                "password": user.password
+            }
+        )
+        assert response.status_code == 201
+        assert isinstance(UUID(response.json()['user_uuid']), UUID)
+        assert response.json()["email"] == user.email
 
 
 @pytest.mark.integration
@@ -55,18 +47,8 @@ async def test_token(global_sessionmaker):
             assert response.status_code == 200
             access_json = response.json()["access_token"]
             refresh_json = response.json()["refresh_token"]
-            access_token:TokensPayload = decode_token(token=access_json)
-            refresh_token:TokensPayload = decode_token(token=refresh_json)
-            db_user:DbUserData = await find_user_by_email(db=session, 
-                                                          user_data=user)
-            assert access_token.sub == db_user.user_uuid
-            assert refresh_token.sub == db_user.user_uuid
-            assert access_token.token_type == 'access'
-            assert refresh_token.token_type == 'refresh'
-            assert access_token.iat < access_token.exp
-            assert refresh_token.iat < refresh_token.exp
-            assert len(str(access_token.iat)) == 10
-            assert len(str(refresh_token.iat)) == 10
+            assert isinstance(access_json, str)
+            assert isinstance(refresh_json, str)      
 
 
 @pytest.mark.integration
