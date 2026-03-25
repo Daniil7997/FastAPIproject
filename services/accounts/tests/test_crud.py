@@ -28,7 +28,8 @@ async def test_find_user_by_email(global_sessionmaker):
     async with global_sessionmaker() as session:
         user = test_users[0]
         await create_user(db=session, user_data=user)
-        response = await find_user_by_email(db=session, user_data=user)
+        response = await find_user_by_email(db=session, 
+                                            user_email=user.email)
 
     assert isinstance(response, DbUserData)
     assert isinstance(response.user_uuid, uuid.UUID)
@@ -48,7 +49,7 @@ async def test_change_user_data(global_sessionmaker):
                 db_user[0].password = hash_password(new_data.password)
                 db_user[0].email = new_data.email
         response_find = await find_user_by_email(db=session,
-                                                 user_data=new_data)
+                                                 user_email=new_data.email)
         assert response_create.user_uuid == response_find.user_uuid
         assert response_create.email != response_find.email
         assert response_create.password != response_find.password
@@ -64,7 +65,7 @@ async def test_delete_user(global_sessionmaker):
         response_delete = await delete_user(db=session, 
                                             user_email=user.email)
         response_find = await find_user_by_email(db=session, 
-                                                 user_data=user)
+                                                 user_email=user.email)
         assert response_delete == True
         assert response_find == None
         assert isinstance(response_create, DbUserData)

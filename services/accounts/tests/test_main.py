@@ -69,6 +69,8 @@ async def test_change_password(global_sessionmaker):
                 headers={"Authorization": f"Bearer {tokens.access_token}"}
             )
             assert response.status_code == 200
-            db_user_after: DbUserData = await find_user_by_email(db=session, 
-                                                           user_data=user)
+            db_user_after: DbUserData = await find_user_by_email(
+                db=session, 
+                user_email=user.email
+                )
             assert db_user_after.password != db_user_before.password

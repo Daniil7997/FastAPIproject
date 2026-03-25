@@ -43,7 +43,8 @@ async def register_user(
              status_code=status.HTTP_200_OK)
 async def get_token(user_data: User, 
                     db: AsyncSession = Depends(get_db)) -> GetToken:
-    user_db_data = await find_user_by_email(db=db, user_data=user_data)
+    user_db_data = await find_user_by_email(db=db, 
+                                            user_email=user_data.email)
     exception_detail = [{"loc": ["email", "password"], 
                          "msg": "Invalid password or email", 
                          "type": "auth-failed"}]

@@ -22,11 +22,11 @@ async def create_user(db: AsyncSession, user_data: User) -> DbUserData:
 
 
 async def find_user_by_email(db: AsyncSession, 
-                             user_data: User) -> DbUserData | None:
+                             user_email: EmailStr) -> DbUserData | None:
     select_column = [AuthUsers.user_uuid, 
                      AuthUsers.email, 
                      AuthUsers.password]
-    stmt = select(*select_column).where(AuthUsers.email == user_data.email)
+    stmt = select(*select_column).where(AuthUsers.email == user_email)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:
