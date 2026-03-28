@@ -51,6 +51,14 @@ networks:
     driver: bridge
 
 
-# запуск сервера - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
-# запуск теста - command: sh -c "alembic upgrade head && python -m pytest -s -v"
-# проверка покрытия тестов - command: sh -c "alembic upgrade head && python -m pytest --cov=app --cov-report=term-missing"
+# Для CI "command" переопределяется в /accounts/compose.test.yaml
+# указанные ниже команды для удобства локальной разработки и тестировани.(copy-past)
+
+# запуск сервера: 
+# - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
+
+# запуск теста:
+# command: sh -c "alembic upgrade head && python -m pytest -s -v"
+
+# проверка покрытия тестов:
+# command: sh -c "alembic upgrade head && python -m pytest --cov=app --cov-report=term-missing"
