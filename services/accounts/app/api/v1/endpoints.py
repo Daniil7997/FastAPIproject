@@ -71,8 +71,8 @@ async def change_password(user_data: UserConfirmPass,
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=[{"loc": ["header", "Authorization"],
-                        "msg": "User with this token don't exists",
-                        "type": "user-dont-exist"}]
+                         "msg": "User with this token does not exists",
+                         "type": "user-dont-exist"}]
                                 )
         check_password: bool = verify_password(
             raw_password=user_data.current_password,
