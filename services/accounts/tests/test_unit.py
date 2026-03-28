@@ -1,4 +1,5 @@
 import uuid
+from fastapi import HTTPException
 import pytest
 from datetime import datetime, timezone
 
@@ -8,7 +9,9 @@ from app.core.security import (verify_password,
                                decode_token)
 from app.logic.main_logic import get_time_for_jwt
 from app.schemas.pydantic_schemas import GetToken, TokensPayload
-from tests.utils_for_tests import test_users, TestPassword
+from tests.utils_for_tests import (test_users, 
+                                   TestPassword, 
+                                   create_expired_tokens)
 
 
 # ----------------- app/core/security.py --------------------
@@ -51,6 +54,38 @@ def test_create_tokens_and_decode_token():
     assert len(str(refresh_payload.iat)) == 10 
     assert len(str(access_payload.exp)) == 10
     assert len(str(refresh_payload.exp)) == 10 
+
+
+@pytest.mark.unit
+def test_decode_token__expired():
+    test_uuid = uuid.uuid7()
+    tokens = create_expired_tokens(user_uuid=test_uuid)
+    with pytest.raises(HTTPException) as exc:
+        decode_token(tokens.access_token)  # <-Exception
+    assert exc.value.status_code == 401
+    exc_dict = exc.value.detail[0]
+    assert exc.value.headers == {"WWW-Authenticate": "Bearer"}
+    assert isinstance(exc_dict["loc"], list)
+    assert isinstance(exc_dict["msg"], str)
+    assert isinstance(exc_dict["type"], str)
+    assert "expire" in exc_dict["msg"].lower()
+    assert "expire" in exc_dict["type"].lower()
+    assert exc_dict["loc"] == ["header", "Authorization"]
+
+
+@pytest.mark.unit
+def test_decode_token__invalid():
+    with pytest.raises(HTTPException) as exc:
+        decode_token('wrong-token')  # <-Exception
+    assert exc.value.status_code == 401
+    exc_dict = exc.value.detail[0]
+    assert exc.value.headers == {"WWW-Authenticate": "Bearer"}
+    assert isinstance(exc_dict["loc"], list)
+    assert isinstance(exc_dict["msg"], str)
+    assert isinstance(exc_dict["type"], str)
+    assert "invalid" in exc_dict["msg"].lower()
+    assert "invalid" in exc_dict["type"].lower()
+    assert exc_dict["loc"] == ["header", "Authorization"]
 # ---------------------------------------------------------------
  
 

@@ -33,7 +33,8 @@ async def register_user(
     except IntegrityError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
                             detail=[{"loc": "email",
-                                     "msg": "Email already exists"}])
+                                     "msg": "Email already exists",
+                                     "type": "conflict"}])
     return CreateUserResponse(email=new_user.email, 
                               user_uuid=new_user.user_uuid)
  
