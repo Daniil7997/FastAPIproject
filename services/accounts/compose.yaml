@@ -35,7 +35,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
+    command: sh -c "alembic upgrade head && python -m pytest --cov=app --cov-report=term-missing"
     volumes:
       - .:/project
     ports:
@@ -50,6 +50,7 @@ networks:
   app_network:
     driver: bridge
 
-# локально: 
+
 # запуск сервера - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
 # запуск теста - command: sh -c "alembic upgrade head && python -m pytest -s -v"
+# проверка покрытия тестов - command: sh -c "alembic upgrade head && python -m pytest --cov=app --cov-report=term-missing"
