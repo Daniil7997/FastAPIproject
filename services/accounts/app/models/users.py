@@ -1,9 +1,9 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy.orm import (MappedAsDataclass, 
-                            DeclarativeBase, 
-                            Mapped, 
+from sqlalchemy.orm import (MappedAsDataclass,
+                            DeclarativeBase,
+                            Mapped,
                             mapped_column)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import String, func
@@ -22,12 +22,11 @@ class AuthUsers(Base):
         insert_default=uuid.uuid7,
         init=False
     )
-    email: Mapped[str] = mapped_column(String(50), 
-                                       unique=True, 
+    email: Mapped[str] = mapped_column(String(50),
+                                       unique=True,
                                        nullable=False)
-    password: Mapped[str] = mapped_column(String(255), 
+    password: Mapped[str] = mapped_column(String(255),
                                           nullable=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(default=func.now(), 
+    updated_at: Mapped[datetime] = mapped_column(default=func.now(),
                                                  onupdate=func.now())
-    

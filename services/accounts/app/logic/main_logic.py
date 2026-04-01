@@ -1,13 +1,13 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 
 def get_time_for_jwt(now: int,
-                     minutes: int = 0, 
-                     hours: int = 0, 
+                     minutes: int = 0,
+                     hours: int = 0,
                      days: int = 0) -> int:
     """
     принимает текущее unix время (now),
-    минуты, часы и дни и возвращает сумму. 
+    минуты, часы и дни и возвращает сумму.
     (для расчёта времени действия токенов)
     """
     get_minutes = timedelta(minutes=minutes).total_seconds()

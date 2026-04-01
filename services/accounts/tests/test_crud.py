@@ -28,7 +28,7 @@ async def test_find_user_by_email(global_sessionmaker):
     async with global_sessionmaker() as session:
         user = test_users[0]
         await create_user(db=session, user_data=user)
-        response = await find_user_by_email(db=session, 
+        response = await find_user_by_email(db=session,
                                             user_email=user.email)
 
     assert isinstance(response, DbUserData)
@@ -44,10 +44,11 @@ async def test_change_user_data(global_sessionmaker):
         new_data = test_users[1]
         response_create = await create_user(db=session, user_data=user)
         async with change_user_data(
-             db=session,
-             user_uuid=response_create.user_uuid) as db_user:         
-                db_user[0].password = hash_password(new_data.password)
-                db_user[0].email = new_data.email
+            db=session,
+            user_uuid=response_create.user_uuid
+        ) as db_user:
+            db_user[0].password = hash_password(new_data.password)
+            db_user[0].email = new_data.email
         response_find = await find_user_by_email(db=session,
                                                  user_email=new_data.email)
         assert response_create.user_uuid == response_find.user_uuid
@@ -60,13 +61,13 @@ async def test_change_user_data(global_sessionmaker):
 async def test_delete_user(global_sessionmaker):
     async with global_sessionmaker() as session:
         user = test_users[0]
-        response_create = await create_user(db=session, 
+        response_create = await create_user(db=session,
                                             user_data=user)
-        response_delete = await delete_user(db=session, 
+        response_delete = await delete_user(db=session,
                                             user_email=user.email)
-        response_find = await find_user_by_email(db=session, 
+        response_find = await find_user_by_email(db=session,
                                                  user_email=user.email)
-        assert response_delete == True
-        assert response_find == None
+        assert response_delete is True
+        assert response_find is None
         assert isinstance(response_create, DbUserData)
         assert isinstance(response_create.user_uuid, uuid.UUID)

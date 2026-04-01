@@ -1,56 +1,56 @@
-from fastapi import (Depends, 
-                     HTTPException, 
-                     APIRouter, 
+from fastapi import (Depends,
+                     HTTPException,
+                     APIRouter,
                      status)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies.deps import get_db, verify_token
-from app.schemas.pydantic_schemas import (User, 
-                                          CreateUserResponse, 
-                                          GetToken, 
+from app.schemas.pydantic_schemas import (User,
+                                          CreateUserResponse,
+                                          GetToken,
                                           TokensPayload,
                                           UserConfirmPass)
-from app.repositories.crud import (create_user, 
-                                   find_user_by_email, 
+from app.repositories.crud import (create_user,
+                                   find_user_by_email,
                                    change_user_data)
-from app.core.security import (verify_password, 
-                               create_tokens, 
+from app.core.security import (verify_password,
+                               create_tokens,
                                hash_password)
 
 
 router = APIRouter()
 
 
-@router.post('/register', 
-             response_model=CreateUserResponse, 
+@router.post('/register',
+             response_model=CreateUserResponse,
              status_code=status.HTTP_201_CREATED)
 async def register_user(
-    user: User,
-    db: AsyncSession = Depends(get_db)) -> CreateUserResponse:
+        user: User,
+        db: AsyncSession = Depends(get_db)) -> CreateUserResponse:
     try:
         new_user = await create_user(db, user)
     except IntegrityError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, 
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
                             detail=[{"loc": "email",
                                      "msg": "Email already exists",
                                      "type": "conflict"}])
-    return CreateUserResponse(email=new_user.email, 
+    return CreateUserResponse(email=new_user.email,
                               user_uuid=new_user.user_uuid)
- 
 
-@router.post('/get-token', 
-             response_model=GetToken, 
+
+@router.post('/get-token',
+             response_model=GetToken,
              status_code=status.HTTP_200_OK)
-async def get_token(user_data: User, 
+async def get_token(user_data: User,
                     db: AsyncSession = Depends(get_db)) -> GetToken:
-    user_db_data = await find_user_by_email(db=db, 
+    user_db_data = await find_user_by_email(db=db,
                                             user_email=user_data.email)
-    exception_detail = [{"loc": ["email", "password"], 
-                         "msg": "Invalid password or email", 
+    exception_detail = [{"loc": ["email", "password"],
+                         "msg": "Invalid password or email",
                          "type": "auth-failed"}]
     if not user_db_data:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=exception_detail)
 
     check_password: bool = verify_password(
@@ -58,17 +58,17 @@ async def get_token(user_data: User,
         hash_password=user_db_data.password
         )
     if not check_password:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=exception_detail)
     return create_tokens(user_db_data.user_uuid)
 
 
 @router.post('/change-password', status_code=status.HTTP_200_OK)
 async def change_password(user_data: UserConfirmPass,
-                          payload: TokensPayload = Depends(verify_token), 
+                          payload: TokensPayload = Depends(verify_token),
                           db: AsyncSession = Depends(get_db)):
-    async with change_user_data(db=db, user_uuid=payload.sub) as db_user:         
-        if not db_user: 
+    async with change_user_data(db=db, user_uuid=payload.sub) as db_user:
+        if not db_user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=[{"loc": ["header", "Authorization"],
@@ -79,7 +79,7 @@ async def change_password(user_data: UserConfirmPass,
             raw_password=user_data.current_password,
             hash_password=db_user[0].password
             )
-        if not check_password: 
+        if not check_password:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=[{"loc": ["body", "password"],

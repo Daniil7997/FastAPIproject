@@ -3,9 +3,9 @@ import pytest
 import uuid
 
 from app.main import application
-from app.schemas.pydantic_schemas import (User, 
+from app.schemas.pydantic_schemas import (User,
                                           DbUserData)
-from app.repositories.crud import (find_user_by_email, 
+from app.repositories.crud import (find_user_by_email,
                                    create_user)
 from app.core.security import create_tokens
 from tests.utils_for_tests import test_users
@@ -15,11 +15,11 @@ from tests.utils_for_tests import test_users
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_register():
-    async with AsyncClient(transport=ASGITransport(app=application), 
+    async with AsyncClient(transport=ASGITransport(app=application),
                            base_url="http://test")as ac:
         user: User = test_users[0]
         response = await ac.post(
-            "/register", 
+            "/register",
             json={
                 "email": user.email,
                 "password": user.password
@@ -33,13 +33,13 @@ async def test_register():
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_register__already_exist(global_sessionmaker):
-    async with AsyncClient(transport=ASGITransport(app=application), 
+    async with AsyncClient(transport=ASGITransport(app=application),
                            base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/register", 
+                "/register",
                 json={
                     "email": user.email,
                     "password": user.password
@@ -62,12 +62,12 @@ async def test_register__already_exist(global_sessionmaker):
 @pytest.mark.asyncio
 async def test_get_token(global_sessionmaker):
     async with AsyncClient(transport=ASGITransport(app=application),
-                       base_url="http://test")as ac:
+                           base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/get-token", 
+                "/get-token",
                 json={
                     "email": user.email,
                     "password": user.password
@@ -77,17 +77,17 @@ async def test_get_token(global_sessionmaker):
             access_json = response.json()["access_token"]
             refresh_json = response.json()["refresh_token"]
             assert isinstance(access_json, str)
-            assert isinstance(refresh_json, str)    
+            assert isinstance(refresh_json, str)
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_get_token__user_not_found(global_sessionmaker):
     async with AsyncClient(transport=ASGITransport(app=application),
-                       base_url="http://test")as ac:
+                           base_url="http://test")as ac:
         user: User = test_users[1]
         response = await ac.post(
-            "/get-token", 
+            "/get-token",
             json={
                 "email": user.email,
                 "password": user.password
@@ -106,12 +106,12 @@ async def test_get_token__user_not_found(global_sessionmaker):
 @pytest.mark.asyncio
 async def test_get_token__check_password_failed(global_sessionmaker):
     async with AsyncClient(transport=ASGITransport(app=application),
-                       base_url="http://test")as ac:
+                           base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/get-token", 
+                "/get-token",
                 json={
                     "email": user.email,
                     "password": f"wrong{user.password}"
@@ -131,14 +131,14 @@ async def test_get_token__check_password_failed(global_sessionmaker):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_change_password(global_sessionmaker):
-    async with AsyncClient(transport=ASGITransport(app=application), 
+    async with AsyncClient(transport=ASGITransport(app=application),
                            base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             db_user_before = await create_user(db=session, user_data=user)
             tokens = create_tokens(db_user_before.user_uuid)
             response = await ac.post(
-                "/change-password", 
+                "/change-password",
                 json={
                     "current_password": user.password,
                     "new_password": "veryStrongPas1957"
@@ -147,7 +147,7 @@ async def test_change_password(global_sessionmaker):
             )
             assert response.status_code == 200
             db_user_after: DbUserData = await find_user_by_email(
-                db=session, 
+                db=session,
                 user_email=user.email
                 )
             assert db_user_after.password != db_user_before.password
@@ -156,14 +156,14 @@ async def test_change_password(global_sessionmaker):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_change_password__user_not_found(global_sessionmaker):
-    async with AsyncClient(transport=ASGITransport(app=application), 
+    async with AsyncClient(transport=ASGITransport(app=application),
                            base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             await create_user(db=session, user_data=user)
-            tokens = create_tokens(uuid.uuid7()) # create wrong tokens
+            tokens = create_tokens(uuid.uuid7())  # create wrong tokens
             response = await ac.post(
-                "/change-password", 
+                "/change-password",
                 json={
                     "current_password": user.password,
                     "new_password": "veryStrongPas1957"
@@ -181,14 +181,14 @@ async def test_change_password__user_not_found(global_sessionmaker):
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_change_password__password_dont_match(global_sessionmaker):
-    async with AsyncClient(transport=ASGITransport(app=application), 
+    async with AsyncClient(transport=ASGITransport(app=application),
                            base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             db_user_before = await create_user(db=session, user_data=user)
             tokens = create_tokens(db_user_before.user_uuid)
             response = await ac.post(
-                "/change-password", 
+                "/change-password",
                 json={
                     "current_password": f"wrong{user.password}",
                     "new_password": "veryStrongPas1957"

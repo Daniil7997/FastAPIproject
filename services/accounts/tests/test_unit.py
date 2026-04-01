@@ -5,12 +5,12 @@ from datetime import datetime, timezone
 
 from app.core.security import (verify_password,
                                hash_password,
-                               create_tokens, 
+                               create_tokens,
                                decode_token)
 from app.logic.main_logic import get_time_for_jwt
 from app.schemas.pydantic_schemas import GetToken, TokensPayload
-from tests.utils_for_tests import (test_users, 
-                                   TestPassword, 
+from tests.utils_for_tests import (test_users,
+                                   TestPassword,
                                    create_expired_tokens)
 
 
@@ -29,8 +29,8 @@ def test_verify_password():
     false_verify = verify_password(
         raw_password=f'{TestPassword.password}wrongString',
         hash_password=TestPassword.hashed_password)
-    assert true_verify == True
-    assert false_verify == False
+    assert true_verify is True
+    assert false_verify is False
 
 
 @pytest.mark.unit
@@ -51,9 +51,9 @@ def test_create_tokens_and_decode_token():
     assert access_payload.iat < access_payload.exp
     assert refresh_payload.iat < refresh_payload.exp
     assert len(str(access_payload.iat)) == 10
-    assert len(str(refresh_payload.iat)) == 10 
+    assert len(str(refresh_payload.iat)) == 10
     assert len(str(access_payload.exp)) == 10
-    assert len(str(refresh_payload.exp)) == 10 
+    assert len(str(refresh_payload.exp)) == 10
 
 
 @pytest.mark.unit
@@ -87,7 +87,7 @@ def test_decode_token__invalid():
     assert "invalid" in exc_dict["type"].lower()
     assert exc_dict["loc"] == ["header", "Authorization"]
 # ---------------------------------------------------------------
- 
+
 
 # -------------------- app/logic/main_logic.py ------------------
 @pytest.mark.unit
@@ -96,8 +96,8 @@ def test_get_time_for_jwt():
     time_5min = get_time_for_jwt(now=now_unix, minutes=5)
     time_5hours = get_time_for_jwt(now=now_unix, hours=5)
     multi_time = get_time_for_jwt(now=now_unix,
-                                  minutes=2, 
-                                  hours=1, 
+                                  minutes=2,
+                                  hours=1,
                                   days=2)
     assert len(str(time_5min)) == 10
     assert len(str(time_5hours)) == 10

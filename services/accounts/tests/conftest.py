@@ -20,7 +20,7 @@ async def db_truncate(critical_check):
         await conn.execute(text("TRUNCATE TABLE auth_users;"))
     yield
 
-  
+
 @pytest.fixture(scope='session')
 async def global_engine() -> AsyncEngine:
     return async_engine
@@ -29,10 +29,9 @@ async def global_engine() -> AsyncEngine:
 @pytest.fixture(scope='session')
 async def global_sessionmaker(global_engine):
     async_session_factory: async_sessionmaker = async_sessionmaker(
-    bind=global_engine,
-    autoflush=False,
-    autocommit=False,
-    expire_on_commit=False
+        bind=global_engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False
     )
     return async_session_factory
-    

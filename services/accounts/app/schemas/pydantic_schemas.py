@@ -19,7 +19,7 @@ class UserConfirmPass(BaseModel):
 class CreateUserResponse(BaseModel):
     email: EmailStr
     user_uuid: uuid.UUID
-    
+
 
 class GetToken(BaseModel):
     access_token: str
@@ -30,10 +30,10 @@ class DbUserData(BaseModel):
     user_uuid: uuid.UUID
     email: EmailStr
     password: str
-    
+
 
 class TokensPayload(BaseModel):
     sub: uuid.UUID
     iat: int
     exp: int
-    token_type: str 
+    token_type: str

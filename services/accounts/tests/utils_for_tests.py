@@ -16,9 +16,9 @@ test_users = (
 
 
 class TestPassword:
-    password='MyStrongPassword'
-    hashed_password=('$argon2id$v=19$m=65536,t=3,p=4$Rm81aqXN6zHvrSasfb3'
-                     '46A$Vjzf0rczccXVvwiZJnuPxxp+L0uCA1c8Cs3s7sRA5KI')
+    password = 'MyStrongPassword'
+    hashed_password = ('$argon2id$v=19$m=65536,t=3,p=4$Rm81aqXN6zHvrSasfb3'
+                       '46A$Vjzf0rczccXVvwiZJnuPxxp+L0uCA1c8Cs3s7sRA5KI')
 
 
 def create_expired_tokens(user_uuid: uuid.UUID) -> GetToken:
@@ -27,23 +27,23 @@ def create_expired_tokens(user_uuid: uuid.UUID) -> GetToken:
     exp_refresh_unix = get_time_for_jwt(now=now_unix, days=-2)
 
     json_access_payload = TokensPayload(
-        sub = user_uuid,                  # ID пользователя
-        iat = now_unix,                   # Время создания
-        exp = exp_access_unix,            # Время действия
-        token_type = "access"             # Тип токена
+        sub=user_uuid,  # ID пользователя
+        iat=now_unix,  # Время создания
+        exp=exp_access_unix,  # Время действия
+        token_type="access"  # Тип токена
     ).model_dump(mode='json')
 
-    json_refresh_payload = TokensPayload(    
-        sub = user_uuid,
-        iat = now_unix,
-        exp = exp_refresh_unix,
-        token_type = "refresh"
+    json_refresh_payload = TokensPayload(
+        sub=user_uuid,
+        iat=now_unix,
+        exp=exp_refresh_unix,
+        token_type="refresh"
     ).model_dump(mode='json')
 
-    access_token = jwt.encode(json_access_payload, 
-                              PRIVATE_KEY, 
+    access_token = jwt.encode(json_access_payload,
+                              PRIVATE_KEY,
                               algorithm=TOKEN_ALGORITHM)
-    refresh_token = jwt.encode(json_refresh_payload, 
-                               PRIVATE_KEY, 
+    refresh_token = jwt.encode(json_refresh_payload,
+                               PRIVATE_KEY,
                                algorithm=TOKEN_ALGORITHM)
     return GetToken(access_token=access_token, refresh_token=refresh_token)

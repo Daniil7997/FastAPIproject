@@ -15,7 +15,7 @@ private_key_bytes = bytes.fromhex(settings.PRIVATE_KEY_HEX)
 
 PRIVATE_KEY = ed25519.Ed25519PrivateKey.from_private_bytes(private_key_bytes)
 TOKEN_ALGORITHM = 'EdDSA'
-HASH_ALGORITHM = PasswordHash.recommended() # алгоритм Argon2
+HASH_ALGORITHM = PasswordHash.recommended()  # алгоритм Argon2
 
 
 def hash_password(password: str) -> str:
@@ -32,24 +32,24 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
     exp_refresh_unix = get_time_for_jwt(now=now_unix, days=2)
 
     json_access_payload = TokensPayload(
-        sub = user_uuid,                  # ID пользователя
-        iat = now_unix,                   # Время создания
-        exp = exp_access_unix,            # Время действия
-        token_type = "access"             # Тип токена
+        sub=user_uuid,  # ID пользователя
+        iat=now_unix,  # Время создания
+        exp=exp_access_unix,  # Время действия
+        token_type="access"  # Тип токена
     ).model_dump(mode='json')
 
-    json_refresh_payload = TokensPayload(    
-        sub = user_uuid,
-        iat = now_unix,
-        exp = exp_refresh_unix,
-        token_type = "refresh"
+    json_refresh_payload = TokensPayload(
+        sub=user_uuid,
+        iat=now_unix,
+        exp=exp_refresh_unix,
+        token_type="refresh"
     ).model_dump(mode='json')
 
-    access_token = jwt.encode(json_access_payload, 
-                              PRIVATE_KEY, 
+    access_token = jwt.encode(json_access_payload,
+                              PRIVATE_KEY,
                               algorithm=TOKEN_ALGORITHM)
-    refresh_token = jwt.encode(json_refresh_payload, 
-                               PRIVATE_KEY, 
+    refresh_token = jwt.encode(json_refresh_payload,
+                               PRIVATE_KEY,
                                algorithm=TOKEN_ALGORITHM)
     return GetToken(access_token=access_token, refresh_token=refresh_token)
 
@@ -59,19 +59,19 @@ def decode_token(token):
         token = jwt.decode(algorithms=TOKEN_ALGORITHM,
                            key=PRIVATE_KEY,
                            jwt=token)
-        
+
     except jwt.exceptions.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=[{"loc": ["header", "Authorization"],
                                      "msg": "token expired",
                                      "type": "token-expired"}],
                             headers={"WWW-Authenticate": "Bearer"})
-    
+
     except jwt.exceptions.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=[{"loc": ["header", "Authorization"],
                                      "msg": "invalid token",
                                      "type": "invalid-token"}],
                             headers={"WWW-Authenticate": "Bearer"})
-    
+
     return TokensPayload(**token)
