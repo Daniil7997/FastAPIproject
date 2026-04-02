@@ -1,6 +1,6 @@
 services:
 
-  accounts_db:
+  resource_db:
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: ${DB_NAME} 
@@ -11,7 +11,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    container_name: accounts_db
+    container_name: resource_db
     ports:
       - "5432:5432"
     volumes:
@@ -19,7 +19,7 @@ services:
     networks:
       - app_network
 
-  accounts_service:
+  resource_service:
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -27,13 +27,13 @@ services:
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
       IS_TEST_DB: ${IS_TEST_DB:-False}
-      PRIVATE_KEY_HEX: ${PRIVATE_KEY_HEX}
+      PUBLIC_KEY_HEX: ${PUBLIC_KEY_HEX}
     build:
       context: .
       target: ${BUILD_TARGET}
-    container_name: accounts_service
+    container_name: resource_service
     depends_on:
-      accounts_db:
+      resource_db:
         condition: service_healthy
     command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
     volumes:
