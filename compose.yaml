@@ -1,0 +1,17 @@
+services:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - accounts_service
+      - resource_service
+    networks:
+      - app_network
+
+# Подключаем файл сервиса accounts
+include:
+  - ./services/accounts/compose.yaml
+  - ./services/resource/compose.yaml

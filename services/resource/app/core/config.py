@@ -23,7 +23,7 @@ class MySettings(BaseSettings):
 
     @property
     def api_root_url(self):
-        return '/resource'
+        return '/resource/'
 
 
 settings = MySettings()
