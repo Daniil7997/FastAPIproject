@@ -51,4 +51,4 @@ jobs:
             --env-file envs/.env.ci.test \
             up \
             --build \
-            --exit-code-from accounts
+            --exit-code-from accounts_service
