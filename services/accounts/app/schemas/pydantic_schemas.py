@@ -21,7 +21,7 @@ class CreateUserResponse(BaseModel):
     user_uuid: uuid.UUID
 
 
-class GetTokenss(BaseModel):
+class GetTokens(BaseModel):
     access_token: str
     refresh_token: str
 

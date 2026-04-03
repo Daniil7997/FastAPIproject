@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies.deps import get_db, verify_token
 from app.schemas.pydantic_schemas import (User,
                                           CreateUserResponse,
-                                          GetTokenss,
+                                          GetTokens,
                                           TokensPayload,
                                           UserConfirmPass,
                                           AccessToken)
@@ -41,10 +41,10 @@ async def register_user(
 
 
 @router.post('/get-token',
-             response_model=GetTokenss,
+             response_model=GetTokens,
              status_code=status.HTTP_200_OK)
 async def get_token(user_data: User,
-                    db: AsyncSession = Depends(get_db)) -> GetTokenss:
+                    db: AsyncSession = Depends(get_db)) -> GetTokens:
     user_db_data = await find_user_by_email(db=db,
                                             user_email=user_data.email)
     exception_detail = [{"loc": ["email", "password"],
@@ -75,7 +75,7 @@ async def refresh(refresh_payload: TokensPayload = Depends(verify_token)):
                      "msg": "this is not a refresh token",
                      "type": "access-denied"}]
         )
-    new_tokens: GetTokenss = create_tokens(user_uuid=refresh_payload.sub)
+    new_tokens: GetTokens = create_tokens(user_uuid=refresh_payload.sub)
     access_token = AccessToken(access_token=new_tokens.access_token)
     return access_token
 
