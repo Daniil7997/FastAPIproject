@@ -75,7 +75,7 @@ async def refresh(refresh_payload: TokensPayload = Depends(verify_token)):
                      "msg": "this is not a refresh token",
                      "type": "access-denied"}]
         )
-    new_tokens: GetToken = await create_tokens(user_uuid=refresh_payload.sub)
+    new_tokens: GetToken = create_tokens(user_uuid=refresh_payload.sub)
     access_token: AccessToken = new_tokens.access_token
     return access_token
 
