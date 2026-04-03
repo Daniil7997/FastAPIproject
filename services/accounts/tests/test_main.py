@@ -4,10 +4,11 @@ import uuid
 
 from app.main import application
 from app.schemas.pydantic_schemas import (User,
-                                          DbUserData)
+                                          DbUserData,
+                                          GetToken)
 from app.repositories.crud import (find_user_by_email,
                                    create_user)
-from app.core.security import create_tokens
+from app.core.security import create_tokens, decode_token
 from tests.utils_for_tests import test_users
 
 
@@ -124,6 +125,48 @@ async def test_get_token__check_password_failed(global_sessionmaker):
         assert len(response_dict["loc"]) == 2
         assert isinstance(response_dict["msg"], str)
         assert isinstance(response_dict["type"], str)
+# -------------------------------------------------------------------
+
+
+# ----------- получение access токена по refresh токену  ------------
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_refresh(global_sessionmaker):
+    async with AsyncClient(transport=ASGITransport(app=application),
+                           base_url="http://test")as ac:
+        async with global_sessionmaker() as session:
+            user: User = test_users[1]
+            db_user: DbUserData = await create_user(db=session, user_data=user)
+            tokens: GetToken = create_tokens(user_uuid=db_user.user_uuid)
+            response = await ac.post(
+                "/refresh",
+                headers={"Authorization": f"Bearer {tokens.refresh_token}"}
+            )
+        assert response.status_code == 200
+        access_token = response.json()["access_token"]
+        access_payload = decode_token(token=access_token)
+        assert access_payload.token_type == 'access'
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_refresh__wrong_token(global_sessionmaker):
+    async with AsyncClient(transport=ASGITransport(app=application),
+                           base_url="http://test")as ac:
+        async with global_sessionmaker() as session:
+            user: User = test_users[1]
+            db_user: DbUserData = await create_user(db=session, user_data=user)
+            tokens: GetToken = create_tokens(user_uuid=db_user.user_uuid)
+            response = await ac.post(
+                "/refresh",
+                headers={"Authorization": f"Bearer {tokens.access_token}"}
+            )
+        assert response.status_code == 403
+        response_dict = response.json()["detail"][0]
+        assert len(response_dict) == 3
+        assert isinstance(response_dict["loc"], list)
+        assert len(response_dict["loc"]) == 2
+        assert response_dict["msg"] == "this is not a refresh token"
 # -------------------------------------------------------------------
 
 
