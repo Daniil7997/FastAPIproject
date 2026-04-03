@@ -6,14 +6,20 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies.deps import get_db, verify_token
-from app.schemas.pydantic_schemas import DbUser, User, TokensPayload
+from app.schemas.pydantic_schemas import (DbUser,
+                                          User,
+                                          TokensPayload,
+                                          RegisterUser)
 from app.repositories.crud import create_user
+
 
 router = APIRouter()
 
 
-@router.post('/create-user')
-async def register_user(username: str,
+@router.post('/create-user',
+             response_model=DbUser,
+             status_code=status.HTTP_201_CREATED)
+async def register_user(username: RegisterUser,
                         db: AsyncSession = Depends(get_db),
                         payload: TokensPayload = Depends(verify_token)
                         ) -> DbUser:

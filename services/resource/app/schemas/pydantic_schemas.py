@@ -12,6 +12,10 @@ class User(BaseModel):
     username: str = username_config
 
 
+class RegisterUser(BaseModel):
+    username: str
+
+
 class DbUser(BaseModel):
     user_uuid: uuid.UUID
     username: str = username_config
