@@ -10,7 +10,8 @@ from app.schemas.pydantic_schemas import (User,
                                           CreateUserResponse,
                                           GetToken,
                                           TokensPayload,
-                                          UserConfirmPass)
+                                          UserConfirmPass,
+                                          AccessToken)
 from app.repositories.crud import (create_user,
                                    find_user_by_email,
                                    change_user_data)
@@ -61,6 +62,22 @@ async def get_token(user_data: User,
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=exception_detail)
     return create_tokens(user_db_data.user_uuid)
+
+
+@router.post('/refresh',
+             response_model=AccessToken,
+             status_code=200)
+async def refresh(refresh_payload: TokensPayload = Depends(verify_token)):
+    if refresh_payload.token_type != 'refresh':
+        raise HTTPException(
+            status_code=403,
+            detail=[{"loc": ["header", "Authorization"],
+                     "msg": "this is not a refresh token",
+                     "type": "access-denied"}]
+        )
+    new_tokens: GetToken = await create_tokens(user_uuid=refresh_payload.sub)
+    access_token: AccessToken = new_tokens.access_token
+    return access_token
 
 
 @router.post('/change-password', status_code=status.HTTP_200_OK)

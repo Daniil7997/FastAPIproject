@@ -26,6 +26,10 @@ class GetToken(BaseModel):
     refresh_token: str
 
 
+class AccessToken(BaseModel):
+    access_token: str
+
+
 class DbUserData(BaseModel):
     user_uuid: uuid.UUID
     email: EmailStr
