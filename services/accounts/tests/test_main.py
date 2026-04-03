@@ -5,7 +5,7 @@ import uuid
 from app.main import application
 from app.schemas.pydantic_schemas import (User,
                                           DbUserData,
-                                          GetToken)
+                                          GetTokens)
 from app.repositories.crud import (find_user_by_email,
                                    create_user)
 from app.core.security import create_tokens, decode_token
@@ -137,7 +137,7 @@ async def test_refresh(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             db_user: DbUserData = await create_user(db=session, user_data=user)
-            tokens: GetToken = create_tokens(user_uuid=db_user.user_uuid)
+            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid)
             response = await ac.post(
                 "/refresh",
                 headers={"Authorization": f"Bearer {tokens.refresh_token}"}
@@ -156,7 +156,7 @@ async def test_refresh__wrong_token(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             db_user: DbUserData = await create_user(db=session, user_data=user)
-            tokens: GetToken = create_tokens(user_uuid=db_user.user_uuid)
+            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid)
             response = await ac.post(
                 "/refresh",
                 headers={"Authorization": f"Bearer {tokens.access_token}"}

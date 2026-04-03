@@ -8,7 +8,7 @@ from app.core.security import (verify_password,
                                create_tokens,
                                decode_token)
 from app.logic.main_logic import get_time_for_jwt
-from app.schemas.pydantic_schemas import GetToken, TokensPayload
+from app.schemas.pydantic_schemas import GetTokens, TokensPayload
 from tests.utils_for_tests import (test_users,
                                    TestPassword,
                                    create_expired_tokens)
@@ -39,7 +39,7 @@ def test_create_tokens_and_decode_token():
     tokens = create_tokens(user_uuid=test_uuid)
     access_payload = decode_token(tokens.access_token)
     refresh_payload = decode_token(tokens.refresh_token)
-    assert isinstance(tokens, GetToken)
+    assert isinstance(tokens, GetTokens)
     assert isinstance(tokens.access_token, str)
     assert isinstance(tokens.access_token, str)
     assert isinstance(access_payload, TokensPayload)

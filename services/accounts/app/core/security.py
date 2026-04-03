@@ -7,7 +7,7 @@ from pwdlib import PasswordHash
 from fastapi import HTTPException, status
 
 from app.core.config import settings
-from app.schemas.pydantic_schemas import GetToken, TokensPayload
+from app.schemas.pydantic_schemas import GetTokens, TokensPayload
 from app.logic.main_logic import get_time_for_jwt
 
 
@@ -26,7 +26,7 @@ def verify_password(raw_password: str, hash_password: str) -> bool:
     return HASH_ALGORITHM.verify(raw_password, hash_password)
 
 
-def create_tokens(user_uuid: uuid.UUID) -> GetToken:
+def create_tokens(user_uuid: uuid.UUID) -> GetTokens:
     now_unix = int(datetime.now(timezone.utc).timestamp())
     exp_access_unix = get_time_for_jwt(now=now_unix, minutes=15)
     exp_refresh_unix = get_time_for_jwt(now=now_unix, days=2)
@@ -51,7 +51,7 @@ def create_tokens(user_uuid: uuid.UUID) -> GetToken:
     refresh_token = jwt.encode(json_refresh_payload,
                                PRIVATE_KEY,
                                algorithm=TOKEN_ALGORITHM)
-    return GetToken(access_token=access_token, refresh_token=refresh_token)
+    return GetTokens(access_token=access_token, refresh_token=refresh_token)
 
 
 def decode_token(token):
