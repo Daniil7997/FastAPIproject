@@ -68,7 +68,7 @@ async def test_get_token(global_sessionmaker):
             user: User = test_users[1]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/get-token",
+                "/get-tokens",
                 json={
                     "email": user.email,
                     "password": user.password
@@ -88,7 +88,7 @@ async def test_get_token__user_not_found(global_sessionmaker):
                            base_url="http://test")as ac:
         user: User = test_users[1]
         response = await ac.post(
-            "/get-token",
+            "/get-tokens",
             json={
                 "email": user.email,
                 "password": user.password
@@ -112,7 +112,7 @@ async def test_get_token__check_password_failed(global_sessionmaker):
             user: User = test_users[1]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/get-token",
+                "/get-tokens",
                 json={
                     "email": user.email,
                     "password": f"wrong{user.password}"

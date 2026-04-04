@@ -40,11 +40,11 @@ async def register_user(
                               user_uuid=new_user.user_uuid)
 
 
-@router.post('/get-token',
+@router.post('/get-tokens',
              response_model=GetTokens,
              status_code=status.HTTP_200_OK)
-async def get_token(user_data: User,
-                    db: AsyncSession = Depends(get_db)) -> GetTokens:
+async def get_tokens(user_data: User,
+                     db: AsyncSession = Depends(get_db)) -> GetTokens:
     user_db_data = await find_user_by_email(db=db,
                                             user_email=user_data.email)
     exception_detail = [{"loc": ["email", "password"],

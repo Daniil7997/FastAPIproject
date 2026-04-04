@@ -18,7 +18,7 @@ from app.repositories.crud import create_user, create_post
 router = APIRouter()
 
 
-@router.post('/create-user',
+@router.post('/users',
              response_model=DbUser,
              status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: RegisterUser,
@@ -36,7 +36,7 @@ async def register_user(user_data: RegisterUser,
     return db_data
 
 
-@router.post('/send-post',
+@router.post('/posts',
              response_model=CreatePostReturn,
              status_code=status.HTTP_201_CREATED)
 async def send_post(postdata: PostData,
