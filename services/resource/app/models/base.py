@@ -23,26 +23,25 @@ class UserData(Base):
         init=True
     )
     username: Mapped[str] = mapped_column(String(20))
-
-    posts: Mapped[list["Posts"]] = relationship(
-        "Posts", back_populates="author", init=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(),
                                                  default=func.now(),
                                                  init=False)
+    posts: Mapped[list["Posts"]] = relationship(
+        "Posts", back_populates="author", init=False)
 
 
 class Posts(Base):
     __tablename__ = "posts"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, init=False)
     user_uuid: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("user_data.user_uuid"),
         init=True
     )
-    author: Mapped["UserData"] = relationship(
-        "UserData", back_populates="posts", init=False)
-    content: Mapped[str] = mapped_column(String(750))
+    content: Mapped[str] = mapped_column(String(750), init=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(),
                                                  default=func.now(),
                                                  init=False)
+    author: Mapped["UserData"] = relationship(
+        "UserData", back_populates="posts", init=False)
