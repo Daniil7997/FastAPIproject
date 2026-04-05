@@ -25,5 +25,9 @@ class MySettings(BaseSettings):
     def api_root_url(self):
         return '/resource/'
 
+    @property
+    def url_redis(self):
+        return 'redis://resource_redis:6379'
+
 
 settings = MySettings()

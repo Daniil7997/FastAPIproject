@@ -17,6 +17,18 @@ services:
     networks:
       - app_network
 
+
+  services_redis:
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+
   resource_service:
     environment:
       DB_HOST: ${DB_HOST}
@@ -31,6 +43,8 @@ services:
       target: ${BUILD_TARGET}
     container_name: resource_service
     depends_on:
+      services_redis:
+        condition: service_healthy 
       resource_db:
         condition: service_healthy
     command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8082"

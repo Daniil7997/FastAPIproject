@@ -12,6 +12,7 @@ dependencies = [
     "fastapi[standard]>=0.135.2",
     "pydantic>=2.12.5",
     "pyjwt>=2.12.1",
+    "redis>=7.4.0",
     "sqlalchemy>=2.0.48",
 ]
 
