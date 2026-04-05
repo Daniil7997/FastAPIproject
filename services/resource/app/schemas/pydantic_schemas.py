@@ -1,11 +1,14 @@
 from datetime import datetime
 import uuid
 
-from pydantic import BaseModel, Field
+from pydantic import (BaseModel,
+                      Field,
+                      ConfigDict)
 
 
 username_config = Field(max_length=20)
-post_config = Field(max_length=750)
+post_content_config = Field(max_length=750)
+post_title_config = Field(max_length=30)
 
 
 class User(BaseModel):
@@ -31,11 +34,26 @@ class TokensPayload(BaseModel):
 
 
 class PostData(BaseModel):
-    content: str = post_config
+    title: str = post_title_config
+    content: str = post_content_config
 
 
 class CreatePostReturn(BaseModel):
-    content: str = post_config
+    content: str = post_content_config
     user_uuid: uuid.UUID
     author: str
     created_at: datetime
+
+
+class UserDataFromDB(BaseModel):
+    username: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PostsFromDB(BaseModel):
+    user_uuid: uuid.UUID
+    author: UserDataFromDB
+    title: str
+    content: str
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)
