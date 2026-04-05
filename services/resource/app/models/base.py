@@ -39,6 +39,7 @@ class Posts(Base):
         ForeignKey("user_data.user_uuid"),
         init=True
     )
+    title: Mapped[str] = mapped_column(String(30), init=True)
     content: Mapped[str] = mapped_column(String(750), init=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(),
                                                  default=func.now(),
