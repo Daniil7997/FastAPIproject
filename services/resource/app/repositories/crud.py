@@ -5,8 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.models.base import UserData, Posts
-from app.schemas.pydantic_schemas import (PostData,
-                                          PostsFromDB,
+from app.schemas.pydantic_schemas import (PostData, PostsFromDB,
                                           User,
                                           DbUser,
                                           CreatePostReturn)
@@ -45,4 +44,9 @@ async def read_posts(db: AsyncSession,
     query = (select(Posts)
              .options(joinedload(Posts.author))
              .order_by(Posts.created_at.desc()))
-    return await paginate(db, query=query, params=params)
+    return await paginate(db,
+                          query=query,
+                          params=params,
+                          transformer=lambda items: [
+                              PostsFromDB.model_validate(i) for i in items
+                              ])

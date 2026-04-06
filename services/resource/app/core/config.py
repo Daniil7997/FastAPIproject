@@ -9,7 +9,7 @@ class MySettings(BaseSettings):
     DB_NAME: str
     IS_TEST_DB: bool = False
     PUBLIC_KEY_HEX: str
-
+    REDIS_PASSWORD: str
     model_config = SettingsConfigDict(env_file="envs/.env.local",
                                       env_file_required=False,
                                       extra='ignore')
@@ -27,7 +27,7 @@ class MySettings(BaseSettings):
 
     @property
     def url_redis(self):
-        return 'redis://resource_redis:6379'
+        return f'redis://:{self.REDIS_PASSWORD}@resource_redis:6379'
 
 
 settings = MySettings()

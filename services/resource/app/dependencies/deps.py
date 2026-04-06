@@ -24,6 +24,7 @@ def verify_token(
     return payload
 
 
+# пример как работать с Redis без декораторов.
 async def get_redis():
     client = Redis.from_url(settings.url_redis, decode_responses=True)
     try:

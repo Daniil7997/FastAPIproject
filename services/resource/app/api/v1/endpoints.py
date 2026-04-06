@@ -4,16 +4,18 @@ from fastapi import (Depends,
                      status)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi_pagination import Params, Page
+from fastapi_pagination import Page, Params
+from fastapi_cache import JsonCoder
+from fastapi_cache.decorator import cache
 
-from app.dependencies.deps import get_db, verify_token
+from app.dependencies.deps import (get_db,
+                                   verify_token)
 from app.schemas.pydantic_schemas import (CreatePostReturn,
                                           DbUser,
-                                          PostData,
+                                          PostData, PostsFromDB,
                                           User,
                                           TokensPayload,
-                                          RegisterUser,
-                                          PostsFromDB)
+                                          RegisterUser)
 from app.repositories.crud import (create_user,
                                    create_post,
                                    read_posts)
@@ -68,6 +70,8 @@ async def send_post(postdata: PostData,
 @router.get('/posts',
             response_model=Page[PostsFromDB],
             status_code=status.HTTP_200_OK)
+@cache(expire=300, namespace='get-posts', coder=JsonCoder)
 async def get_posts(params: Params = Depends(),
                     db: AsyncSession = Depends(get_db)):
-    return await read_posts(db=db, params=params)
+    db_data = await read_posts(db=db, params=params)
+    return db_data
