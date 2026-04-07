@@ -40,7 +40,7 @@ async def register_user(
                               user_uuid=new_user.user_uuid)
 
 
-@router.post('/get-tokens',
+@router.post('/tokens',
              response_model=GetTokens,
              status_code=status.HTTP_200_OK)
 async def get_tokens(user_data: User,
