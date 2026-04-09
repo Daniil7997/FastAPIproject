@@ -2,3 +2,7 @@ services:
 
   accounts_service:
     command: sh -c "alembic upgrade head && python -m pytest -s -v"
+
+networks:
+  app_network:
+    driver: bridge

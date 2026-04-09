@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'collect-accounts'
+    static_configs:
+      - targets: ['accounts_service:8081']
+
+  - job_name: 'collect-resource'
+    static_configs:
+      - targets: ['resource_service:8082']

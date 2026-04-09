@@ -1,0 +1,37 @@
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    expose:
+      - 9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=http://127.0.0.1/prometheus/'
+      - '--web.route-prefix=/prometheus'                 
+    volumes:
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yml
+    networks:
+      - app_network
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    environment:
+    - GF_SECURITY_ADMIN_PASSWORD=admin
+    - GF_SERVER_DOMAIN=localhost 
+    - GF_SERVER_ROOT_URL=http://localhost/grafana/
+    - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    expose:
+      - 3000
+    volumes:
+      - grafana-storage:/var/lib/grafana # Для сохранения данных (база, плагины)
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning # Для авто-настройки
+    depends_on:
+      - prometheus
+    networks:
+      - app_network
+
+
+volumes:
+  grafana-storage:

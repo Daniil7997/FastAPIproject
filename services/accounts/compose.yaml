@@ -44,10 +44,6 @@ services:
 volumes:
   accounts_db_data:
 
-networks:
-  app_network:
-    driver: bridge
-
 
 # Для CI "command" переопределяется в /accounts/compose.test.yaml
 # указанные ниже команды для удобства локальной разработки и тестировани.(copy-past)
