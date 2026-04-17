@@ -5,7 +5,10 @@ import jwt
 
 from app.core.security import PRIVATE_KEY, TOKEN_ALGORITHM
 from app.logic.main_logic import get_time_for_jwt
-from app.schemas.pydantic_schemas import GetTokens, TokensPayload, User
+from app.schemas.pydantic_schemas import (GetTokens,
+                                          User,
+                                          AccessTokensPayload,
+                                          RefreshTokensPayload)
 
 
 test_users = (
@@ -21,19 +24,20 @@ class TestPassword:
                        '46A$Vjzf0rczccXVvwiZJnuPxxp+L0uCA1c8Cs3s7sRA5KI')
 
 
-def create_expired_tokens(user_uuid: uuid.UUID) -> GetTokens:
+def create_expired_tokens(user_uuid: uuid.UUID, role) -> GetTokens:
     now_unix = int(datetime.now(timezone.utc).timestamp())
     exp_access_unix = get_time_for_jwt(now=now_unix, minutes=-15)
     exp_refresh_unix = get_time_for_jwt(now=now_unix, days=-2)
 
-    json_access_payload = TokensPayload(
+    json_access_payload = AccessTokensPayload(
         sub=user_uuid,  # ID пользователя
         iat=now_unix,  # Время создания
         exp=exp_access_unix,  # Время действия
+        role=role,  # роль
         token_type="access"  # Тип токена
     ).model_dump(mode='json')
 
-    json_refresh_payload = TokensPayload(
+    json_refresh_payload = RefreshTokensPayload(
         sub=user_uuid,
         iat=now_unix,
         exp=exp_refresh_unix,

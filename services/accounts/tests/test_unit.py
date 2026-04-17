@@ -8,7 +8,10 @@ from app.core.security import (verify_password,
                                create_tokens,
                                decode_token)
 from app.logic.main_logic import get_time_for_jwt
-from app.schemas.pydantic_schemas import GetTokens, TokensPayload
+from app.models.users import UserRole
+from app.schemas.pydantic_schemas import (AccessTokensPayload,
+                                          RefreshTokensPayload,
+                                          GetTokens)
 from tests.utils_for_tests import (test_users,
                                    TestPassword,
                                    create_expired_tokens)
@@ -36,18 +39,18 @@ def test_verify_password():
 @pytest.mark.unit
 def test_create_tokens_and_decode_token():
     test_uuid = uuid.uuid7()
-    tokens = create_tokens(user_uuid=test_uuid)
+    tokens = create_tokens(user_uuid=test_uuid,
+                           role=UserRole.user)
     access_payload = decode_token(tokens.access_token)
     refresh_payload = decode_token(tokens.refresh_token)
     assert isinstance(tokens, GetTokens)
-    assert isinstance(tokens.access_token, str)
-    assert isinstance(tokens.access_token, str)
-    assert isinstance(access_payload, TokensPayload)
-    assert isinstance(refresh_payload, TokensPayload)
+    assert isinstance(access_payload, AccessTokensPayload)
+    assert isinstance(refresh_payload, RefreshTokensPayload)
     assert isinstance(access_payload.sub, uuid.UUID)
     assert isinstance(refresh_payload.sub, uuid.UUID)
     assert access_payload.token_type == 'access'
     assert refresh_payload.token_type == 'refresh'
+    assert access_payload.role == UserRole.user
     assert access_payload.iat < access_payload.exp
     assert refresh_payload.iat < refresh_payload.exp
     assert len(str(access_payload.iat)) == 10
@@ -59,7 +62,8 @@ def test_create_tokens_and_decode_token():
 @pytest.mark.unit
 def test_decode_token__expired():
     test_uuid = uuid.uuid7()
-    tokens = create_expired_tokens(user_uuid=test_uuid)
+    tokens = create_expired_tokens(user_uuid=test_uuid,
+                                   role=UserRole.user)
     with pytest.raises(HTTPException) as exc:
         decode_token(tokens.access_token)  # <-Exception
     assert exc.value.status_code == 401

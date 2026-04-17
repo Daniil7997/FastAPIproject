@@ -34,9 +34,18 @@ class DbUserData(BaseModel):
     user_uuid: uuid.UUID
     email: EmailStr
     password: str
+    role: str
 
 
-class TokensPayload(BaseModel):
+class AccessTokensPayload(BaseModel):
+    sub: uuid.UUID
+    iat: int
+    exp: int
+    role: str
+    token_type: str
+
+
+class RefreshTokensPayload(BaseModel):
     sub: uuid.UUID
     iat: int
     exp: int

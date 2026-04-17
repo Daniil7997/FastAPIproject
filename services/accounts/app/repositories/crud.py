@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import EmailStr
 
 from app.core.security import hash_password
-from app.models.users import AuthUsers
+from app.models.users import AuthUsers, UserStatus
 from app.schemas.pydantic_schemas import User, DbUserData
 
 
@@ -18,22 +18,44 @@ async def create_user(db: AsyncSession, user_data: User) -> DbUserData:
     await db.commit()
     return DbUserData(user_uuid=db_user.user_uuid,
                       email=db_user.email,
-                      password=db_user.password)
+                      password=db_user.password,
+                      role=db_user.role)
 
 
 async def find_user_by_email(db: AsyncSession,
                              user_email: EmailStr) -> DbUserData | None:
     select_column = [AuthUsers.user_uuid,
                      AuthUsers.email,
-                     AuthUsers.password]
-    stmt = select(*select_column).where(AuthUsers.email == user_email)
+                     AuthUsers.password,
+                     AuthUsers.role]
+    stmt = select(*select_column).where(AuthUsers.email == user_email,
+                                        AuthUsers.status == UserStatus.active)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:
         return None
     return DbUserData(user_uuid=user_db_data.user_uuid,
                       email=user_db_data.email,
-                      password=user_db_data.password)
+                      password=user_db_data.password,
+                      role=user_db_data.role)
+
+
+async def find_user_by_uuid(db: AsyncSession,
+                            user_uuid: uuid.UUID) -> DbUserData | None:
+    select_column = [AuthUsers.user_uuid,
+                     AuthUsers.email,
+                     AuthUsers.password,
+                     AuthUsers.role]
+    stmt = select(*select_column).where(AuthUsers.user_uuid == user_uuid,
+                                        AuthUsers.status == UserStatus.active)
+    result = await db.execute(stmt)
+    user_db_data = result.one_or_none()
+    if not user_db_data:
+        return None
+    return DbUserData(user_uuid=user_db_data.user_uuid,
+                      email=user_db_data.email,
+                      password=user_db_data.password,
+                      role=user_db_data.role)
 
 
 @asynccontextmanager
@@ -41,7 +63,8 @@ async def change_user_data(
     db: AsyncSession,
     user_uuid: uuid.UUID
 ) -> AsyncGenerator[AuthUsers | None, None]:
-    stmt = select(AuthUsers).where(AuthUsers.user_uuid == user_uuid)
+    stmt = select(AuthUsers).where(AuthUsers.user_uuid == user_uuid,
+                                   AuthUsers.status == UserStatus.active)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:

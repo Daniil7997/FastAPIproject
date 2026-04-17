@@ -3,6 +3,7 @@ import pytest
 import uuid
 
 from app.main import application
+from app.models.users import UserRole
 from app.schemas.pydantic_schemas import (User,
                                           DbUserData,
                                           GetTokens)
@@ -137,7 +138,8 @@ async def test_refresh(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             db_user: DbUserData = await create_user(db=session, user_data=user)
-            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid)
+            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid,
+                                              role=db_user.role)
             response = await ac.post(
                 "/refresh",
                 headers={"Authorization": f"Bearer {tokens.refresh_token}"}
@@ -156,17 +158,18 @@ async def test_refresh__wrong_token(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[1]
             db_user: DbUserData = await create_user(db=session, user_data=user)
-            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid)
+            tokens: GetTokens = create_tokens(user_uuid=db_user.user_uuid,
+                                              role=db_user.role)
             response = await ac.post(
                 "/refresh",
                 headers={"Authorization": f"Bearer {tokens.access_token}"}
             )
-        assert response.status_code == 403
+        assert response.status_code == 401
         response_dict = response.json()["detail"][0]
         assert len(response_dict) == 3
         assert isinstance(response_dict["loc"], list)
         assert len(response_dict["loc"]) == 2
-        assert response_dict["msg"] == "this is not a refresh token"
+        assert response_dict["msg"] == "need refresh token"
 # -------------------------------------------------------------------
 
 
@@ -179,7 +182,8 @@ async def test_change_password(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             db_user_before = await create_user(db=session, user_data=user)
-            tokens = create_tokens(db_user_before.user_uuid)
+            tokens = create_tokens(db_user_before.user_uuid,
+                                   role=db_user_before.role)
             response = await ac.post(
                 "/change-password",
                 json={
@@ -204,7 +208,8 @@ async def test_change_password__user_not_found(global_sessionmaker):
         async with global_sessionmaker() as session:
             user: User = test_users[0]
             await create_user(db=session, user_data=user)
-            tokens = create_tokens(uuid.uuid7())  # create wrong tokens
+            tokens = create_tokens(uuid.uuid7(),
+                                   role=UserRole.user)
             response = await ac.post(
                 "/change-password",
                 json={
@@ -228,8 +233,9 @@ async def test_change_password__password_dont_match(global_sessionmaker):
                            base_url="http://test")as ac:
         async with global_sessionmaker() as session:
             user: User = test_users[0]
-            db_user_before = await create_user(db=session, user_data=user)
-            tokens = create_tokens(db_user_before.user_uuid)
+            db_user = await create_user(db=session, user_data=user)
+            tokens = create_tokens(db_user.user_uuid,
+                                   role=db_user.role)
             response = await ac.post(
                 "/change-password",
                 json={

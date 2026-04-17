@@ -5,15 +5,20 @@ from fastapi import (Depends,
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.dependencies.deps import get_db, verify_token
-from app.schemas.pydantic_schemas import (User,
+from app.dependencies.deps import (get_db,
+                                   verify_access_token,
+                                   verify_refresh_token)
+from app.schemas.pydantic_schemas import (AccessTokensPayload,
+                                          RefreshTokensPayload,
+                                          DbUserData,
+                                          User,
                                           CreateUserResponse,
                                           GetTokens,
-                                          TokensPayload,
                                           UserConfirmPass,
                                           AccessToken)
 from app.repositories.crud import (create_user,
                                    find_user_by_email,
+                                   find_user_by_uuid,
                                    change_user_data)
 from app.core.security import (verify_password,
                                create_tokens,
@@ -61,29 +66,33 @@ async def get_tokens(user_data: User,
     if not check_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail=exception_detail)
-    return create_tokens(user_db_data.user_uuid)
+    return create_tokens(user_db_data.user_uuid,
+                         user_db_data.role)
 
 
 @router.post('/refresh',
              response_model=AccessToken,
              status_code=200)
-async def refresh(refresh_payload: TokensPayload = Depends(verify_token)):
-    if refresh_payload.token_type != 'refresh':
-        raise HTTPException(
-            status_code=403,
-            detail=[{"loc": ["header", "Authorization"],
-                     "msg": "this is not a refresh token",
-                     "type": "access-denied"}]
-        )
-    new_tokens: GetTokens = create_tokens(user_uuid=refresh_payload.sub)
+async def refresh(
+    refresh_payload: RefreshTokensPayload = Depends(verify_refresh_token),
+    db: AsyncSession = Depends(get_db)
+):
+    db_user: DbUserData = await find_user_by_uuid(
+        db=db,
+        user_uuid=refresh_payload.sub
+                                                  )
+    new_tokens: GetTokens = create_tokens(user_uuid=refresh_payload.sub,
+                                          role=db_user.role)
     access_token = AccessToken(access_token=new_tokens.access_token)
     return access_token
 
 
 @router.post('/change-password', status_code=status.HTTP_200_OK)
-async def change_password(user_data: UserConfirmPass,
-                          payload: TokensPayload = Depends(verify_token),
-                          db: AsyncSession = Depends(get_db)):
+async def change_password(
+    user_data: UserConfirmPass,
+    payload: AccessTokensPayload = Depends(verify_access_token),
+    db: AsyncSession = Depends(get_db)
+):
     async with change_user_data(db=db, user_uuid=payload.sub) as db_user:
         if not db_user:
             raise HTTPException(

@@ -7,7 +7,9 @@ from pwdlib import PasswordHash
 from fastapi import HTTPException, status
 
 from app.core.config import settings
-from app.schemas.pydantic_schemas import GetTokens, TokensPayload
+from app.schemas.pydantic_schemas import (AccessTokensPayload,
+                                          RefreshTokensPayload,
+                                          GetTokens)
 from app.logic.main_logic import get_time_for_jwt
 
 
@@ -26,19 +28,20 @@ def verify_password(raw_password: str, hash_password: str) -> bool:
     return HASH_ALGORITHM.verify(raw_password, hash_password)
 
 
-def create_tokens(user_uuid: uuid.UUID) -> GetTokens:
+def create_tokens(user_uuid: uuid.UUID, role) -> GetTokens:
     now_unix = int(datetime.now(timezone.utc).timestamp())
     exp_access_unix = get_time_for_jwt(now=now_unix, minutes=15)
     exp_refresh_unix = get_time_for_jwt(now=now_unix, days=2)
 
-    json_access_payload = TokensPayload(
+    json_access_payload = AccessTokensPayload(
         sub=user_uuid,  # ID пользователя
         iat=now_unix,  # Время создания
         exp=exp_access_unix,  # Время действия
+        role=role,  # Роль пользователя
         token_type="access"  # Тип токена
     ).model_dump(mode='json')
 
-    json_refresh_payload = TokensPayload(
+    json_refresh_payload = RefreshTokensPayload(
         sub=user_uuid,
         iat=now_unix,
         exp=exp_refresh_unix,
@@ -73,5 +76,8 @@ def decode_token(token):
                                      "msg": "invalid token",
                                      "type": "invalid-token"}],
                             headers={"WWW-Authenticate": "Bearer"})
-
-    return TokensPayload(**token)
+    if token['token_type'] == 'refresh':
+        result = RefreshTokensPayload(**token)
+    elif token['token_type'] == 'access':
+        result = AccessTokensPayload(**token)
+    return result
