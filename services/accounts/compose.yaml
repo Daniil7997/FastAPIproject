@@ -32,7 +32,7 @@ services:
     depends_on:
       accounts_db:
         condition: service_healthy
-    command: sh -c "alembic upgrade head && python -m pytest -s -v"
+    command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8000"
     volumes:
       - .:/project
     ports:
@@ -42,10 +42,6 @@ services:
 
 volumes:
   accounts_db_data:
-
-networks:
-  app_network:
-    external: True
 
 
 # Для CI "command" переопределяется в /accounts/compose.test.yaml
