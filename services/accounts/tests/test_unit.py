@@ -12,9 +12,12 @@ from app.models.users import UserRole
 from app.schemas.pydantic_schemas import (AccessTokensPayload,
                                           RefreshTokensPayload,
                                           GetTokens)
+from app.dependencies.deps import (verify_access_token,
+                                   verify_refresh_token)
 from tests.utils_for_tests import (test_users,
                                    TestPassword,
-                                   create_expired_tokens)
+                                   create_expired_tokens,
+                                   create_mock_creds)
 
 
 # ----------------- app/core/security.py --------------------
@@ -29,10 +32,14 @@ def test_hash_password():
 def test_verify_password():
     true_verify = verify_password(raw_password=TestPassword.password,
                                   hash_password=TestPassword.hashed_password)
+    assert true_verify is True
+
+
+@pytest.mark.unit
+def test_verify_password__wrong_password():
     false_verify = verify_password(
         raw_password=f'{TestPassword.password}wrongString',
         hash_password=TestPassword.hashed_password)
-    assert true_verify is True
     assert false_verify is False
 
 
@@ -108,4 +115,50 @@ def test_get_time_for_jwt():
     assert len(str(multi_time)) == 10
     assert time_5min < time_5hours
     assert time_5hours < multi_time
+# ----------------------------------------------------------------
+
+
+# ----------------- app/dependencies/deps.py ---------------------
+def test_verify_access_token():
+    tokens = create_tokens(user_uuid=uuid.uuid7(),
+                           role=UserRole.user)
+    mock = create_mock_creds(token=tokens.access_token)
+    access_payload = verify_access_token(token=mock)
+    assert access_payload.token_type == 'access'
+
+
+def test_verify_access_token__refresh_token():
+    tokens = create_tokens(user_uuid=uuid.uuid7(),
+                           role=UserRole.user)
+    mock = create_mock_creds(token=tokens.refresh_token)
+    with pytest.raises(HTTPException) as exc:
+        verify_access_token(token=mock)
+    assert exc.value.status_code == 401
+    detail = exc.value.detail[0]
+    assert detail['loc'] == ["header", "Authorization"]
+    assert detail['msg'] == 'need access token'
+    assert detail['type'] == 'wrong-token'
+    assert exc.value.headers == {"WWW-Authenticate": "Bearer"}
+
+
+def test_verify_refresh_token():
+    tokens = create_tokens(user_uuid=uuid.uuid7(),
+                           role=UserRole.user)
+    mock = create_mock_creds(token=tokens.refresh_token)
+    access_payload = verify_refresh_token(token=mock)
+    assert access_payload.token_type == 'refresh'
+
+
+def test_verify_refresh_token__access_token():
+    tokens = create_tokens(user_uuid=uuid.uuid7(),
+                           role=UserRole.user)
+    mock = create_mock_creds(token=tokens.access_token)
+    with pytest.raises(HTTPException) as exc:
+        verify_refresh_token(token=mock)
+    assert exc.value.status_code == 401
+    detail = exc.value.detail[0]
+    assert detail['loc'] == ["header", "Authorization"]
+    assert detail['msg'] == 'need refresh token'
+    assert detail['type'] == 'wrong-token'
+    assert exc.value.headers == {"WWW-Authenticate": "Bearer"}
 # ----------------------------------------------------------------

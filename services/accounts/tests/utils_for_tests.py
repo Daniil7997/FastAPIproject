@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import uuid
+from unittest.mock import MagicMock
 
 import jwt
 
@@ -51,3 +52,9 @@ def create_expired_tokens(user_uuid: uuid.UUID, role) -> GetTokens:
                                PRIVATE_KEY,
                                algorithm=TOKEN_ALGORITHM)
     return GetTokens(access_token=access_token, refresh_token=refresh_token)
+
+
+def create_mock_creds(token):
+    mock = MagicMock()
+    mock.credentials = token
+    return mock

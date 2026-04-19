@@ -5,7 +5,8 @@ from app.core.security import hash_password
 from app.repositories.crud import (create_user,
                                    change_user_data,
                                    delete_user,
-                                   find_user_by_email)
+                                   find_user_by_email,
+                                   find_user_by_uuid)
 from app.schemas.pydantic_schemas import DbUserData
 from tests.utils_for_tests import test_users
 
@@ -34,6 +35,38 @@ async def test_find_user_by_email(global_sessionmaker):
     assert isinstance(response, DbUserData)
     assert isinstance(response.user_uuid, uuid.UUID)
     assert response.email == user.email
+
+
+@pytest.mark.crud
+@pytest.mark.asyncio
+async def test_find_user_by_email__not_found(global_sessionmaker):
+    async with global_sessionmaker() as session:
+        user = test_users[0]
+        response = await find_user_by_email(db=session,
+                                            user_email=user.email)
+    assert response is None
+
+
+@pytest.mark.crud
+@pytest.mark.asyncio
+async def test_find_user_by_uuid(global_sessionmaker):
+    async with global_sessionmaker() as session:
+        user = test_users[0]
+        db_user = await create_user(db=session, user_data=user)
+        response = await find_user_by_uuid(db=session,
+                                           user_uuid=db_user.user_uuid)
+    assert isinstance(response, DbUserData)
+    assert isinstance(response.user_uuid, uuid.UUID)
+    assert response.email == user.email
+
+
+@pytest.mark.crud
+@pytest.mark.asyncio
+async def test_find_user_by_uuid__not_found(global_sessionmaker):
+    async with global_sessionmaker() as session:
+        response = await find_user_by_uuid(db=session,
+                                           user_uuid=uuid.uuid7())
+    assert response is None
 
 
 @pytest.mark.crud
