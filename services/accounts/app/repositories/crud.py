@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import EmailStr
 
 from app.core.security import hash_password
-from app.models.users import AuthUsers, UserStatus
+from app.models.users import AuthUsers
 from app.schemas.pydantic_schemas import User, DbUserData
 
 
@@ -29,7 +29,7 @@ async def find_user_by_email(db: AsyncSession,
                      AuthUsers.password,
                      AuthUsers.role]
     stmt = select(*select_column).where(AuthUsers.email == user_email,
-                                        AuthUsers.status == UserStatus.active)
+                                        AuthUsers.is_active)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:
@@ -47,7 +47,7 @@ async def find_user_by_uuid(db: AsyncSession,
                      AuthUsers.password,
                      AuthUsers.role]
     stmt = select(*select_column).where(AuthUsers.user_uuid == user_uuid,
-                                        AuthUsers.status == UserStatus.active)
+                                        AuthUsers.is_active)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:
@@ -64,7 +64,7 @@ async def change_user_data(
     user_uuid: uuid.UUID
 ) -> AsyncGenerator[AuthUsers | None, None]:
     stmt = select(AuthUsers).where(AuthUsers.user_uuid == user_uuid,
-                                   AuthUsers.status == UserStatus.active)
+                                   AuthUsers.is_active)
     result = await db.execute(stmt)
     user_db_data = result.one_or_none()
     if not user_db_data:

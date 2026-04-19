@@ -12,11 +12,6 @@ from sqlalchemy import (String,
                         Enum)
 
 
-class UserStatus(enum.StrEnum):
-    active = "active"
-    deleted = "deleted"
-
-
 class UserRole(enum.StrEnum):
     admin = "admin"
     user = "user"
@@ -43,9 +38,9 @@ class AuthUsers(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole),
                                            default=UserRole.user,
                                            nullable=False)
-    status: Mapped[UserStatus] = mapped_column(Enum(UserStatus),
-                                               default=UserStatus.active,
-                                               nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True,
+                                            nullable=False,
+                                            init=False)
     created_at: Mapped[datetime] = mapped_column(default=func.now())
     updated_at: Mapped[datetime] = mapped_column(default=func.now(),
                                                  onupdate=func.now())
