@@ -57,7 +57,8 @@ async def get_tokens(user_data: User,
                          "type": "auth-failed"}]
     if not user_db_data:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail=exception_detail)
+                            detail=exception_detail,
+                            headers={"WWW-Authenticate": "Bearer"})
 
     check_password: bool = verify_password(
         raw_password=user_data.password,
@@ -65,7 +66,8 @@ async def get_tokens(user_data: User,
         )
     if not check_password:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail=exception_detail)
+                            detail=exception_detail,
+                            headers={"WWW-Authenticate": "Bearer"})
     return create_tokens(user_db_data.user_uuid,
                          user_db_data.role)
 

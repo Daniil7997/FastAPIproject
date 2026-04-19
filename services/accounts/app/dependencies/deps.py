@@ -29,8 +29,9 @@ def verify_access_token(
              status_code=status.HTTP_401_UNAUTHORIZED,
              detail=[{"loc": ["header", "Authorization"],
                       "msg": "need access token",
-                      "type": "wrong-token"}]
-                                )
+                      "type": "wrong-token"}],
+             headers={"WWW-Authenticate": "Bearer"}
+                      )
     return payload
 
 
@@ -43,6 +44,7 @@ def verify_refresh_token(
              status_code=status.HTTP_401_UNAUTHORIZED,
              detail=[{"loc": ["header", "Authorization"],
                       "msg": "need refresh token",
-                      "type": "wrong-token"}]
+                      "type": "wrong-token"}],
+             headers={"WWW-Authenticate": "Bearer"}
                                 )
     return payload
