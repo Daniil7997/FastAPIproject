@@ -13,12 +13,10 @@ services:
     networks:
       - app_network
 
-# Подключаем файл сервиса accounts
 include:
   - ./services/accounts/compose.yaml
   - ./services/resource/compose.yaml
   - ./deploy/compose.yaml
-
 
 networks:
   app_network:

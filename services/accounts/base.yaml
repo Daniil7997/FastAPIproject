@@ -1,6 +1,5 @@
 services:
-
-  resource_db:
+  accounts_db:
     image: postgres:15-alpine
     environment:
       POSTGRES_DB: ${DB_NAME} 
@@ -11,25 +10,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    container_name: resource_db
+    container_name: accounts_db
     volumes:
-      - resource_db_data:/var/lib/postgresql/data
+      - accounts_db_data:/var/lib/postgresql/data
     networks:
       - app_network
 
-  resource_redis:
-    image: redis:alpine
-    container_name: resource_redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - app_network
-
-  resource_service:
+  accounts_service:
     environment:
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
@@ -37,25 +24,25 @@ services:
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
       IS_TEST_DB: ${IS_TEST_DB:-False}
-      PUBLIC_KEY_HEX: ${PUBLIC_KEY_HEX}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      PRIVATE_KEY_HEX: ${PRIVATE_KEY_HEX}
     build:
       context: .
       target: ${BUILD_TARGET}
-    container_name: resource_service
+    container_name: accounts_service
     depends_on:
-      resource_redis:
-        condition: service_healthy 
-      resource_db:
+      accounts_db:
         condition: service_healthy
-    command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8082"
+    # command будет переопределён.
+    command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8081"
     volumes:
       - .:/project
+    # ports:
+    #   - "8081:8081"
     networks:
       - app_network
 
 volumes:
-  resource_db_data:
+  accounts_db_data:
 
 networks:
   app_network:
@@ -66,7 +53,7 @@ networks:
 # указанные ниже команды для удобства локальной разработки и тестировани.(copy-past)
 
 # запуск сервера: 
-# - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8082"
+# - command: sh -c "alembic upgrade head && fastapi dev app/main.py --host 0.0.0.0 --port 8081"
 
 # запуск теста:
 # command: sh -c "alembic upgrade head && python -m pytest -s -v"

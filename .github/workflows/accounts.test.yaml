@@ -46,7 +46,6 @@ jobs:
         working-directory: ./services/accounts
         run: |
           docker compose \
-            -f compose.yaml \
             -f compose.test.yaml \
             --env-file envs/.env.ci.test \
             up \

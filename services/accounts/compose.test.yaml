@@ -1,7 +1,23 @@
+name: test_accounts_service
+
 services:
+  accounts_db:
+    extends:
+      file: base.yaml
+      service: accounts_db
+    container_name: test_accounts_db
+    volumes:
+      - test_accounts_db_data:/var/lib/postgresql/data
 
   accounts_service:
-    command: sh -c "alembic upgrade head && python -m pytest -s -v"
+    extends:
+      file: base.yaml
+      service: accounts_service
+    container_name: test_accounts_service
+    command: sh -c "alembic upgrade head && python -m pytest --cov=app --cov-report=term-missing"
+
+volumes:
+  test_accounts_db_data:
 
 networks:
   app_network:
