@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from fastapi import HTTPException, status
 
 from app.core.config import settings
-from app.schemas.pydantic_schemas import TokensPayload
+from app.schemas.pydantic_schemas import AccessTokensPayload
 
 
 public_key_bytes = bytes.fromhex(settings.PUBLIC_KEY_HEX)
@@ -32,4 +32,4 @@ def decode_token(token):
                                      "type": "invalid-token"}],
                             headers={"WWW-Authenticate": "Bearer"})
 
-    return TokensPayload(**token)
+    return AccessTokensPayload(**token)

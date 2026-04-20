@@ -9,13 +9,14 @@ from fastapi_cache import JsonCoder
 from fastapi_cache.decorator import cache
 
 from app.dependencies.deps import (get_db,
-                                   verify_token)
+                                   verify_access_token)
 from app.schemas.pydantic_schemas import (CreatePostReturn,
                                           DbUser,
-                                          PostData, PostsFromDB,
+                                          PostData,
+                                          PostsFromDB,
                                           User,
-                                          TokensPayload,
-                                          RegisterUser)
+                                          RegisterUser,
+                                          AccessTokensPayload)
 from app.repositories.crud import (create_user,
                                    create_post,
                                    read_posts)
@@ -27,10 +28,11 @@ router = APIRouter()
 @router.post('/users',
              response_model=DbUser,
              status_code=status.HTTP_201_CREATED)
-async def register_user(user_data: RegisterUser,
-                        db: AsyncSession = Depends(get_db),
-                        payload: TokensPayload = Depends(verify_token)
-                        ) -> DbUser:
+async def register_user(
+    user_data: RegisterUser,
+    db: AsyncSession = Depends(get_db),
+    payload: AccessTokensPayload = Depends(verify_access_token)
+) -> DbUser:
     data = User(user_uuid=payload.sub, username=user_data.username)
     try:
         db_data: DbUser = await create_user(db=db, data=data)
@@ -47,7 +49,7 @@ async def register_user(user_data: RegisterUser,
              status_code=status.HTTP_201_CREATED)
 async def send_post(postdata: PostData,
                     db: AsyncSession = Depends(get_db),
-                    payload: TokensPayload = Depends(verify_token)
+                    payload: AccessTokensPayload = Depends(verify_access_token)
                     ) -> DbUser:
     try:
         new_post: CreatePostReturn = await create_post(db=db,

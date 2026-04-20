@@ -26,10 +26,11 @@ class DbUser(BaseModel):
     created_at: datetime
 
 
-class TokensPayload(BaseModel):
+class AccessTokensPayload(BaseModel):
     sub: uuid.UUID
     iat: int
     exp: int
+    role: str
     token_type: str
 
 
