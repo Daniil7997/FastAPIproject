@@ -54,3 +54,7 @@ class NewData(BaseModel):
 class ChangeUserData(BaseModel):
     current_password: str = PASSWORD_CONFIG
     new_data: NewData
+
+
+class ConfirmAction(BaseModel):
+    password: str
