@@ -11,11 +11,6 @@ class User(BaseModel):
     password: str = PASSWORD_CONFIG
 
 
-class UserConfirmPass(BaseModel):
-    current_password: str = PASSWORD_CONFIG
-    new_password: str = PASSWORD_CONFIG
-
-
 class CreateUserResponse(BaseModel):
     email: EmailStr
     user_uuid: uuid.UUID
@@ -27,7 +22,7 @@ class GetTokens(BaseModel):
 
 
 class AccessToken(BaseModel):
-    access_token: str
+    token: str
 
 
 class DbUserData(BaseModel):
@@ -50,3 +45,12 @@ class RefreshTokensPayload(BaseModel):
     iat: int
     exp: int
     token_type: str
+
+
+class NewData(BaseModel):
+    password: str
+
+
+class ChangeUserData(BaseModel):
+    current_password: str = PASSWORD_CONFIG
+    new_data: NewData

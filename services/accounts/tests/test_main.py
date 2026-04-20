@@ -21,7 +21,7 @@ async def test_register():
                            base_url="http://test")as ac:
         user: User = test_users[0]
         response = await ac.post(
-            "/register",
+            "/accounts",
             json={
                 "email": user.email,
                 "password": user.password
@@ -41,7 +41,7 @@ async def test_register__already_exist(global_sessionmaker):
             user: User = test_users[0]
             await create_user(db=session, user_data=user)
             response = await ac.post(
-                "/register",
+                "/accounts",
                 json={
                     "email": user.email,
                     "password": user.password
@@ -145,7 +145,7 @@ async def test_refresh(global_sessionmaker):
                 headers={"Authorization": f"Bearer {tokens.refresh_token}"}
             )
         assert response.status_code == 200
-        access_token = response.json()["access_token"]
+        access_token = response.json()["token"]
         access_payload = decode_token(token=access_token)
         assert access_payload.token_type == 'access'
 
@@ -184,11 +184,11 @@ async def test_change_password(global_sessionmaker):
             db_user_before = await create_user(db=session, user_data=user)
             tokens = create_tokens(db_user_before.user_uuid,
                                    role=db_user_before.role)
-            response = await ac.post(
-                "/change-password",
+            response = await ac.patch(
+                "/accounts",
                 json={
                     "current_password": user.password,
-                    "new_password": "veryStrongPas1957"
+                    "new_data": {"password": f"{user.password}new"}
                 },
                 headers={"Authorization": f"Bearer {tokens.access_token}"}
             )
@@ -210,11 +210,11 @@ async def test_change_password__user_not_found(global_sessionmaker):
             await create_user(db=session, user_data=user)
             tokens = create_tokens(uuid.uuid7(),
                                    role=UserRole.user)
-            response = await ac.post(
-                "/change-password",
+            response = await ac.patch(
+                "/accounts",
                 json={
                     "current_password": user.password,
-                    "new_password": "veryStrongPas1957"
+                    "new_data": {"password": f"{user.password}new"}
                 },
                 headers={"Authorization": f"Bearer {tokens.access_token}"}
             )
@@ -236,11 +236,11 @@ async def test_change_password__password_dont_match(global_sessionmaker):
             db_user = await create_user(db=session, user_data=user)
             tokens = create_tokens(db_user.user_uuid,
                                    role=db_user.role)
-            response = await ac.post(
-                "/change-password",
+            response = await ac.patch(
+                "/accounts",
                 json={
                     "current_password": f"wrong{user.password}",
-                    "new_password": "veryStrongPas1957"
+                    "new_data": {"password": f"{user.password}new"}
                 },
                 headers={"Authorization": f"Bearer {tokens.access_token}"}
             )
