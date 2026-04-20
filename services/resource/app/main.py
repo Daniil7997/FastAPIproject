@@ -23,4 +23,5 @@ application = FastAPI(root_path=settings.api_root_url,
 
 application.include_router(main_router)
 
-Instrumentator().instrument(application).expose(application)
+Instrumentator().instrument(application).expose(application,
+                                                include_in_schema=False)
